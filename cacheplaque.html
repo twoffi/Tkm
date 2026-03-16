@@ -308,7 +308,23 @@
         <span class="selected-info" id="selectedInfo"></span>
       </div>
       <canvas id="plateCanvas"></canvas>
-      <p class="hint">Clique sur un élément pour le sélectionner · Glisse pour le déplacer · ⤡ pour redimensionner</p>
+
+      <!-- Contrôles élément sélectionné — visible quand un élément est sélectionné -->
+      <div id="selectedControls" style="display:none;margin-top:1rem;background:var(--bg3);border:1px solid var(--red);padding:1rem;border-radius:2px">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--red);margin-bottom:0.8rem" id="selectedLabel">Élément sélectionné</div>
+        <label class="form-label">Taille</label>
+        <div class="slider-row" style="margin-bottom:0.8rem">
+          <button onclick="resizeSelected(-2)" style="background:var(--bg2);border:1px solid var(--border);color:var(--white);width:36px;height:36px;font-size:1.2rem;cursor:pointer;flex-shrink:0">−</button>
+          <input type="range" class="slider" id="selectedSize" min="8" max="120" value="28" oninput="applySelectedSize(this.value)" style="flex:1" />
+          <button onclick="resizeSelected(2)" style="background:var(--bg2);border:1px solid var(--border);color:var(--white);width:36px;height:36px;font-size:1.2rem;cursor:pointer;flex-shrink:0">+</button>
+          <span class="slider-val" id="selectedSizeVal">28</span>
+        </div>
+        <div style="display:flex;gap:0.5rem">
+          <button class="tool-btn" onclick="deleteSelected()" style="flex:1;background:rgba(224,22,10,0.15);border-color:var(--red);color:var(--red)">✕ Supprimer</button>
+        </div>
+      </div>
+
+      <p class="hint">Clique sur un élément pour le sélectionner · Glisse pour déplacer</p>
     </div>
 
     <!-- COMMANDE -->
@@ -700,6 +716,7 @@ function updateElementList() {
     </div>`;
   }).join('');
   document.getElementById('selectedInfo').textContent = selected ? `Sélectionné : ${selected.type==='text'?'"'+selected.text+'"':selected.network}` : '';
+  showSelectedControls();
 }
 
 function selectEl(id) {
@@ -713,6 +730,31 @@ function deleteById(id) {
   if (selected?.id === id) selected = null;
   updateElementList();
   redraw();
+}
+
+function applySelectedSize(val) {
+  if (!selected) return;
+  selected.size = Math.max(8, Math.min(120, +val));
+  document.getElementById('selectedSizeVal').textContent = Math.round(selected.size);
+  redraw();
+}
+
+function resizeSelected(delta) {
+  if (!selected) return;
+  selected.size = Math.max(8, Math.min(120, selected.size + delta));
+  document.getElementById('selectedSize').value = selected.size;
+  document.getElementById('selectedSizeVal').textContent = Math.round(selected.size);
+  redraw();
+}
+
+function showSelectedControls() {
+  const ctrl = document.getElementById('selectedControls');
+  if (!selected) { ctrl.style.display = 'none'; return; }
+  ctrl.style.display = 'block';
+  const label = selected.type === 'text' ? `✎ "${selected.text.substring(0,16)}"` : `⬡ ${selected.network}`;
+  document.getElementById('selectedLabel').textContent = label;
+  document.getElementById('selectedSize').value = selected.size;
+  document.getElementById('selectedSizeVal').textContent = Math.round(selected.size);
 }
 
 /* ════════════════════════════════════════
