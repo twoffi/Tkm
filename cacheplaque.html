@@ -199,7 +199,15 @@
         <label class="form-label">Importer une image</label>
         <input type="file" id="bgImageFile" accept="image/*" onchange="loadBgImage(this)" style="width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--grey);padding:0.6rem;font-size:0.85rem;cursor:pointer;margin-bottom:0.9rem" />
         <div id="bgImagePreview" style="display:none;background:var(--bg3);border:1px solid var(--border);padding:0.5rem;margin-bottom:0.9rem;text-align:center;font-size:0.78rem;color:var(--red)">✓ Image chargée — glisse-la sur la plaque pour la repositionner</div>
-        <button class="btn-grey" onclick="bgOffsetX=0;bgOffsetY=0;redraw()" style="margin-bottom:0.9rem">↺ Recentrer l'image</button>
+        <button class="btn-grey" onclick="bgOffsetX=0;bgOffsetY=0;bgScale=1;document.getElementById('bgScaleSlider').value=100;document.getElementById('bgScaleVal').textContent='100%';redraw()" style="margin-bottom:0.9rem">↺ Recentrer l'image</button>
+
+        <label class="form-label">Zoom de l'image</label>
+        <div class="slider-row" style="margin-bottom:0.9rem">
+          <button onclick="changeBgScale(-5)" style="background:var(--bg2);border:1px solid var(--border);color:var(--white);width:36px;height:36px;font-size:1.1rem;cursor:pointer;flex-shrink:0">−</button>
+          <input type="range" class="slider" id="bgScaleSlider" min="50" max="300" value="100" oninput="setBgScale(this.value)" />
+          <button onclick="changeBgScale(5)" style="background:var(--bg2);border:1px solid var(--border);color:var(--white);width:36px;height:36px;font-size:1.1rem;cursor:pointer;flex-shrink:0">+</button>
+          <span class="slider-val" id="bgScaleVal">100%</span>
+        </div>
       </div>
 
       <!-- Opacité commune -->
@@ -397,6 +405,20 @@ let bgImage  = null;
 let bgType   = 'solid'; // 'solid' | 'image'
 let bgOffsetX = 0;
 let bgOffsetY = 0;
+let bgScale   = 1;
+
+function setBgScale(val) {
+  bgScale = val / 100;
+  document.getElementById('bgScaleVal').textContent = val + '%';
+  redraw();
+}
+
+function changeBgScale(delta) {
+  const slider = document.getElementById('bgScaleSlider');
+  const newVal = Math.min(300, Math.max(50, parseInt(slider.value) + delta));
+  slider.value = newVal;
+  setBgScale(newVal);
+}
 
 function setBgType(type, btn) {
   bgType = type;
@@ -477,7 +499,7 @@ function redraw() {
 
   // Draw background
   if (bgType === 'image' && bgImage) {
-    const scale = Math.max(PLATE_W / bgImage.width, PLATE_H / bgImage.height);
+    const scale = Math.max(PLATE_W / bgImage.width, PLATE_H / bgImage.height) * bgScale;
     const dw = bgImage.width * scale;
     const dh = bgImage.height * scale;
     const dx = (PLATE_W - dw) / 2 + bgOffsetX;
@@ -798,7 +820,7 @@ function renderToCanvas(exportScale) {
   c.clip();
 
   if (bgType === 'image' && bgImage) {
-    const scale = Math.max(PLATE_W / bgImage.width, PLATE_H / bgImage.height);
+    const scale = Math.max(PLATE_W / bgImage.width, PLATE_H / bgImage.height) * bgScale;
     const dw = bgImage.width * scale, dh = bgImage.height * scale;
     c.globalAlpha = bgAlpha;
     c.drawImage(bgImage, (PLATE_W-dw)/2 + bgOffsetX, (PLATE_H-dh)/2 + bgOffsetY, dw, dh);
