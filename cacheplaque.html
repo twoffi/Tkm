@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TKM – Configurateur Cache Plaque</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;600;700&family=Barlow+Condensed:wght@600;700&family=Montserrat:wght@700;900&family=Oswald:wght@700;400&family=Raleway:wght@700;900&family=Russo+One&family=Teko:wght@700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --red: #E0160A; --red-dark: #a50f07;
+      --bg: #0a0a0a; --bg2: #111; --bg3: #1a1a1a;
+      --white: #f5f5f5; --grey: #888;
+      --border: rgba(255,255,255,0.07);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; overflow-x: hidden; }
+
+    /* ── OVERLAYS ── */
+    .overlay {
+      position: fixed; inset: 0; z-index: 9999;
+      background: rgba(10,10,10,0.97);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; padding: 2rem;
+      gap: 1.5rem;
+    }
+    .overlay-icon { font-size: 4rem; animation: pulse 1.5s ease infinite; }
+    .overlay-title { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; letter-spacing: 0.05em; color: var(--white); }
+    .overlay-sub { font-size: 0.95rem; color: var(--grey); line-height: 1.7; max-width: 300px; }
+    .overlay-sub strong { color: var(--white); }
+    .overlay-btn { background: var(--red); color: #fff; border: none; padding: 0.9rem 2.2rem; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 1rem; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; clip-path: polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%); margin-top: 0.5rem; }
+    .overlay-btn:hover { background: var(--red-dark); }
+    @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+    @keyframes rotate-hint { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(90deg); } }
+    .rotate-anim { display: inline-block; animation: rotate-hint 2s ease infinite; font-size: 4rem; }
+
+    /* Cacher overlays par défaut sur desktop */
+    #overlayBrowser { display: none; z-index: 10001; }
+    #overlayPortrait { display: none; z-index: 10000; }
+
+    /* Afficher overlay portrait uniquement sur mobile en portrait */
+    @media (max-width: 768px) and (orientation: portrait) {
+      #overlayPortrait { display: flex !important; }
+    }
+
+    /* NAV */
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 5%; background: rgba(10,10,10,0.95); backdrop-filter: blur(14px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 200; }
+    .nav-logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: 0.1em; color: var(--white); text-decoration: none; }
+    .nav-logo span { color: var(--red); }
+    .nav-back { font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 0.85rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--grey); text-decoration: none; transition: color 0.2s; }
+    .nav-back:hover { color: var(--white); }
+
+    /* HEADER */
+    .page-header { text-align: center; padding: 3rem 5% 1.5rem; }
+    .page-label { font-family: 'Barlow Condensed', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.25em; text-transform: uppercase; color: var(--red); margin-bottom: 0.6rem; }
+    .page-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(2.5rem,6vw,5rem); line-height: 1; margin-bottom: 0.6rem; }
+    .page-sub { color: var(--grey); font-size: 1rem; max-width: 520px; margin: 0 auto; line-height: 1.6; }
+
+    /* LAYOUT */
+    .editor-layout { display: grid; grid-template-columns: 320px 1fr; gap: 2rem; padding: 2rem 5% 4rem; max-width: 1400px; margin: 0 auto; align-items: start; }
+
+    /* SIDEBAR */
+    .sidebar { display: flex; flex-direction: column; gap: 1.2rem; }
+    .panel { background: var(--bg2); border: 1px solid var(--border); padding: 1.6rem; }
+    .panel-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 0.08em; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem; }
+    .panel-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .form-label { font-family: 'Barlow Condensed', sans-serif; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--grey); margin-bottom: 0.4rem; display: block; }
+    .form-input { width: 100%; background: var(--bg3); border: 1px solid var(--border); color: var(--white); font-family: 'Barlow', sans-serif; font-size: 0.95rem; padding: 0.65rem 0.9rem; outline: none; transition: border-color 0.2s; margin-bottom: 0.9rem; }
+    .form-input:focus { border-color: var(--red); }
+    .form-input::placeholder { color: #444; }
+    textarea.form-input { resize: vertical; min-height: 60px; }
+
+    /* COLOR ROW */
+    .color-row { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.9rem; }
+    .color-pick { width: 36px; height: 36px; border: 2px solid var(--border); cursor: pointer; background: none; padding: 0; flex-shrink: 0; }
+    .color-pick::-webkit-color-swatch-wrapper { padding: 0; }
+    .color-pick::-webkit-color-swatch { border: none; }
+
+    /* SLIDER */
+    .slider-row { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.9rem; }
+    .slider { flex: 1; -webkit-appearance: none; height: 3px; background: var(--border); outline: none; }
+    .slider::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; background: var(--red); cursor: pointer; clip-path: polygon(50% 0%,100% 50%,50% 100%,0% 50%); }
+    .slider-val { font-family: 'Bebas Neue', sans-serif; font-size: 1rem; color: var(--red); min-width: 2.5rem; text-align: right; }
+
+    /* FONT SELECT */
+    .font-select { width: 100%; background: var(--bg3); border: 1px solid var(--border); color: var(--white); font-family: 'Barlow', sans-serif; font-size: 0.9rem; padding: 0.65rem 0.9rem; outline: none; margin-bottom: 0.9rem; cursor: pointer; }
+
+    /* SIZE SELECT */
+    .size-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-bottom: 0.9rem; }
+
+    /* SOCIAL GRID */
+    .social-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 0.5rem; margin-bottom: 0.9rem; }
+    .social-btn { background: var(--bg3); border: 2px solid var(--border); color: var(--white); padding: 0.7rem 0.3rem; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 0.3rem; transition: all 0.2s; clip-path: polygon(5px 0%,100% 0%,calc(100% - 5px) 100%,0% 100%); }
+    .social-btn svg { width: 22px; height: 22px; }
+    .social-btn:hover { border-color: var(--red); background: rgba(224,22,10,0.1); }
+    .social-name { font-family: 'Barlow Condensed', sans-serif; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+
+    /* BUTTONS */
+    .btn-red { background: var(--red); color: #fff; border: none; padding: 0.75rem 1.2rem; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 0.88rem; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; width: 100%; clip-path: polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%); transition: background 0.2s; margin-bottom: 0.5rem; }
+    .btn-red:hover { background: var(--red-dark); }
+    .btn-grey { background: transparent; color: var(--white); border: 1px solid var(--border); padding: 0.75rem 1.2rem; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 0.88rem; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; width: 100%; clip-path: polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%); transition: all 0.2s; margin-bottom: 0.5rem; }
+    .btn-grey:hover { border-color: var(--red); color: var(--red); }
+
+    /* ELEMENT LIST */
+    .element-list { display: flex; flex-direction: column; gap: 0.4rem; max-height: 180px; overflow-y: auto; }
+    .element-item { background: var(--bg3); border: 1px solid var(--border); padding: 0.5rem 0.8rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: border-color 0.2s; font-size: 0.85rem; }
+    .element-item:hover, .element-item.selected { border-color: var(--red); }
+    .element-item-name { color: var(--grey); font-family: 'Barlow Condensed', sans-serif; font-size: 0.8rem; letter-spacing: 0.05em; }
+    .element-del { background: none; border: none; color: #555; cursor: pointer; font-size: 1rem; padding: 0 0.2rem; transition: color 0.2s; }
+    .element-del:hover { color: var(--red); }
+
+    /* CANVAS AREA */
+    .canvas-area { display: flex; flex-direction: column; gap: 1.5rem; }
+    .canvas-wrapper { background: var(--bg2); border: 1px solid var(--border); padding: 2rem; }
+    .canvas-toolbar { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
+    .tool-btn { padding: 0.35rem 0.9rem; font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; border: 1px solid var(--border); background: var(--bg3); color: var(--grey); transition: all 0.2s; clip-path: polygon(5px 0%,100% 0%,calc(100% - 5px) 100%,0% 100%); }
+    .tool-btn.active, .tool-btn:hover { background: var(--red); border-color: var(--red); color: #fff; }
+
+    #plateCanvas { display: block; margin: 0 auto; cursor: default; touch-action: none; max-width: 100%; }
+
+    /* HINT */
+    .hint { font-size: 0.78rem; color: var(--grey); text-align: center; margin-top: 0.8rem; font-style: italic; }
+
+    /* EXPORT */
+    .export-panel { background: var(--bg2); border: 1px solid var(--border); padding: 1.6rem; }
+    .export-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 0.08em; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem; }
+    .export-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* ORDER FORM */
+    .order-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-bottom: 0.9rem; }
+    .order-recap { background: var(--bg3); border: 1px solid var(--border); padding: 1rem 1.2rem; margin-bottom: 1rem; }
+    .recap-title { font-family: 'Barlow Condensed', sans-serif; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--red); margin-bottom: 0.8rem; }
+    .recap-row { display: flex; justify-content: space-between; font-size: 0.88rem; padding-bottom: 0.4rem; border-bottom: 1px solid var(--border); margin-bottom: 0.4rem; }
+    .recap-row:last-child { border: none; margin: 0; padding: 0; }
+    .recap-key { color: var(--grey); }
+    .recap-val { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; color: var(--white); }
+
+    /* SELECTED INDICATOR */
+    .selected-info { font-family: 'Barlow Condensed', sans-serif; font-size: 0.78rem; letter-spacing: 0.1em; color: var(--red); text-transform: uppercase; margin-left: auto; }
+
+    @media (max-width: 960px) { .editor-layout { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">TK<span>M</span></a>
+  <a href="index.html" class="nav-back">← Retour au site</a>
+</nav>
+
+<!-- OVERLAY : Navigateur in-app détecté -->
+<div class="overlay" id="overlayBrowser">
+  <div class="overlay-icon">🌐</div>
+  <div class="overlay-title">Ouvre dans ton<br><span style="color:var(--red)">Navigateur</span></div>
+  <p class="overlay-sub">Ce configurateur ne fonctionne pas correctement dans l'app Instagram, TikTok ou autres.<br><br>Appuie sur <strong>les 3 points ···</strong> ou l'icône de partage, puis choisis <strong>"Ouvrir dans Safari"</strong> ou <strong>"Ouvrir dans Chrome"</strong>.</p>
+  <button class="overlay-btn" onclick="document.getElementById('overlayBrowser').style.display='none'">Continuer quand même</button>
+</div>
+
+<!-- OVERLAY : Mode portrait sur mobile -->
+<div class="overlay" id="overlayPortrait">
+  <div class="rotate-anim">📱</div>
+  <div class="overlay-title">Tourne ton<br><span style="color:var(--red)">Téléphone</span></div>
+  <p class="overlay-sub">La plaque d'immatriculation est en format horizontal.<br><br>Tourne ton téléphone en <strong>mode paysage</strong> pour un meilleur confort de design.</p>
+  <button class="overlay-btn" onclick="document.getElementById('overlayPortrait').style.display='none'">Continuer en portrait</button>
+</div>
+
+<div class="page-header">
+  <div class="page-label">Personnalisation</div>
+  <h1 class="page-title">Configurateur<br><span style="color:var(--red)">Cache Plaque</span></h1>
+  <p class="page-sub">Crée ton cache plaque sur mesure — texte, logo, fond, couleurs. Drag & drop pour tout positionner.</p>
+</div>
+
+<div class="editor-layout">
+
+  <!-- ── SIDEBAR ── -->
+  <div class="sidebar">
+
+    <!-- FOND -->
+    <div class="panel">
+      <div class="panel-title">01 — Fond</div>
+
+      <!-- Toggle couleur / image -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:1.2rem">
+        <button class="tool-btn active" id="bgTypeSolid" onclick="setBgType('solid',this)">🎨 Couleur</button>
+        <button class="tool-btn" id="bgTypeImage" onclick="setBgType('image',this)">🖼 Image</button>
+      </div>
+
+      <!-- Couleur unie -->
+      <div id="bgSolidBlock">
+        <label class="form-label">Couleur de fond</label>
+        <div class="color-row">
+          <input type="color" class="color-pick" id="bgColor" value="#111111" oninput="redraw()" />
+          <span style="font-size:0.85rem;color:var(--grey)">Couleur principale</span>
+        </div>
+      </div>
+
+      <!-- Image de fond -->
+      <div id="bgImageBlock" style="display:none">
+        <label class="form-label">Importer une image</label>
+        <input type="file" id="bgImageFile" accept="image/*" onchange="loadBgImage(this)" style="width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--grey);padding:0.6rem;font-size:0.85rem;cursor:pointer;margin-bottom:0.9rem" />
+        <div id="bgImagePreview" style="display:none;background:var(--bg3);border:1px solid var(--border);padding:0.5rem;margin-bottom:0.9rem;text-align:center;font-size:0.78rem;color:var(--red)">✓ Image chargée — glisse-la sur la plaque pour la repositionner</div>
+        <button class="btn-grey" onclick="bgOffsetX=0;bgOffsetY=0;redraw()" style="margin-bottom:0.9rem">↺ Recentrer l'image</button>
+      </div>
+
+      <!-- Opacité commune -->
+      <label class="form-label">Opacité du fond</label>
+      <div class="slider-row">
+        <input type="range" class="slider" id="bgOpacity" min="0" max="100" value="100" oninput="redraw()" />
+        <span class="slider-val" id="bgOpacityVal">100%</span>
+      </div>
+
+      <label class="form-label">Couleur bordure</label>
+      <div class="color-row">
+        <input type="color" class="color-pick" id="borderColor" value="#E0160A" oninput="redraw()" />
+        <input type="number" class="form-input" id="borderWidth" min="0" max="20" value="4" oninput="redraw()" style="margin:0;width:70px" />
+        <span style="font-size:0.8rem;color:var(--grey)">px</span>
+      </div>
+
+      <label class="form-label">Arrondi des coins (px)</label>
+      <div class="slider-row">
+        <input type="range" class="slider" id="borderRadius" min="0" max="40" value="8" oninput="redraw()" />
+        <span class="slider-val" id="borderRadiusVal">8px</span>
+      </div>
+    </div>
+
+    <!-- TEXTE -->
+    <div class="panel">
+      <div class="panel-title">02 — Ajouter Texte</div>
+
+      <label class="form-label">Texte</label>
+      <input type="text" class="form-input" id="newText" placeholder="Ton texte..." maxlength="40" />
+
+      <label class="form-label">Police</label>
+      <select class="font-select" id="newFont">
+        <option value="Bebas Neue">Bebas Neue</option>
+        <option value="Montserrat">Montserrat Black</option>
+        <option value="Oswald">Oswald</option>
+        <option value="Raleway">Raleway Black</option>
+        <option value="Russo One">Russo One</option>
+        <option value="Teko">Teko Bold</option>
+        <option value="Barlow">Barlow</option>
+      </select>
+
+      <div class="size-row">
+        <div>
+          <label class="form-label">Taille</label>
+          <input type="number" class="form-input" id="newFontSize" value="28" min="8" max="120" style="margin:0" />
+        </div>
+        <div>
+          <label class="form-label">Couleur</label>
+          <input type="color" class="color-pick" id="newTextColor" value="#ffffff" style="width:100%;height:38px" />
+        </div>
+      </div>
+
+      <button class="btn-red" onclick="addText()">+ Ajouter le texte</button>
+    </div>
+
+    <!-- LOGOS RÉSEAUX -->
+    <div class="panel">
+      <div class="panel-title">03 — Logos Réseaux</div>
+      <div class="social-grid">
+        <button class="social-btn" onclick="addSocial('instagram')">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.791-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+          <span class="social-name">Insta</span>
+        </button>
+        <button class="social-btn" onclick="addSocial('tiktok')">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.22 8.22 0 004.84 1.56V6.79a4.85 4.85 0 01-1.07-.1z"/></svg>
+          <span class="social-name">TikTok</span>
+        </button>
+        <button class="social-btn" onclick="addSocial('youtube')">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.19a3.02 3.02 0 00-2.12-2.14C19.54 3.5 12 3.5 12 3.5s-7.54 0-9.38.55A3.02 3.02 0 00.5 6.19 31.5 31.5 0 000 12a31.5 31.5 0 00.5 5.81 3.02 3.02 0 002.12 2.14C4.46 20.5 12 20.5 12 20.5s7.54 0 9.38-.55a3.02 3.02 0 002.12-2.14A31.5 31.5 0 0024 12a31.5 31.5 0 00-.5-5.81zM9.75 15.52V8.48L15.5 12l-5.75 3.52z"/></svg>
+          <span class="social-name">YouTube</span>
+        </button>
+        <button class="social-btn" onclick="addSocial('snapchat')">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.065 2.012c.268 0 .54.013.806.04 2.756.277 4.758 2.32 4.758 5.076 0 .337-.033.68-.055 1.018-.022.338.022.676.088 1.01.2 1.032.876 1.836 2.268 2.11.055.011.11.022.165.033.308.066.605.198.76.462.15.255.1.566-.044.804-.19.31-.496.518-.838.625-.452.14-1.044.268-1.14.814-.088.498.18.94.44 1.332.13.195.302.37.422.577.26.44.196.947-.1 1.347-.308.41-.81.64-1.347.74-.495.09-1.12.19-1.508.554-.38.355-.507.86-.678 1.347-.198.553-.498 1.082-1.02 1.347-.495.252-1.114.19-1.642.033-.528-.157-1.064-.36-1.624-.36-.56 0-1.096.203-1.624.36-.528.157-1.147.22-1.642-.033-.522-.265-.822-.794-1.02-1.347-.17-.487-.298-.992-.678-1.347-.388-.364-1.013-.464-1.508-.554-.537-.1-1.04-.33-1.347-.74-.296-.4-.36-.907-.1-1.347.12-.207.292-.382.422-.577.26-.392.528-.834.44-1.332-.096-.546-.688-.674-1.14-.814-.342-.107-.648-.315-.838-.625-.144-.238-.194-.549-.044-.804.155-.264.452-.396.76-.462.055-.011.11-.022.165-.033 1.392-.274 2.068-1.078 2.268-2.11.066-.334.11-.672.088-1.01-.022-.338-.055-.681-.055-1.018 0-2.756 2.002-4.799 4.758-5.076.266-.027.538-.04.806-.04z"/></svg>
+          <span class="social-name">Snap</span>
+        </button>
+      </div>
+
+      <label class="form-label">Taille des logos (px)</label>
+      <div class="slider-row">
+        <input type="range" class="slider" id="logoSize" min="16" max="80" value="36" oninput="document.getElementById('logoSizeVal').textContent=this.value+'px'" />
+        <span class="slider-val" id="logoSizeVal">36px</span>
+      </div>
+
+      <label class="form-label">Couleur des logos</label>
+      <input type="color" class="color-pick" id="logoColor" value="#ffffff" style="width:100%;height:36px" />
+    </div>
+
+    <!-- ÉLÉMENTS -->
+    <div class="panel">
+      <div class="panel-title">04 — Éléments</div>
+      <div class="element-list" id="elementList"></div>
+      <p style="font-size:0.78rem;color:var(--grey);margin-top:0.8rem;line-height:1.5">Clique sur un élément pour le sélectionner, puis déplace-le sur la plaque.</p>
+    </div>
+
+  </div>
+
+  <!-- ── CANVAS AREA ── -->
+  <div class="canvas-area">
+    <div class="canvas-wrapper">
+      <div class="canvas-toolbar">
+        <button class="tool-btn active" id="toolMove" onclick="setTool('move',this)">✥ Déplacer</button>
+        <button class="tool-btn" id="toolBg" onclick="setTool('bg',this)">🖼 Déplacer fond</button>
+        <button class="tool-btn" id="toolResize" onclick="setTool('resize',this)">⤡ Redimensionner</button>
+        <button class="tool-btn" id="toolDelete" onclick="deleteSelected()">✕ Supprimer</button>
+        <button class="tool-btn" onclick="clearAll()">🗑 Tout effacer</button>
+        <span class="selected-info" id="selectedInfo"></span>
+      </div>
+      <canvas id="plateCanvas"></canvas>
+      <p class="hint">Clique sur un élément pour le sélectionner · Glisse pour le déplacer · ⤡ pour redimensionner</p>
+    </div>
+
+    <!-- COMMANDE -->
+    <div class="export-panel">
+      <div class="export-title">📋 Commande</div>
+
+      <p style="font-size:.85rem;color:var(--grey);line-height:1.6;margin-bottom:1.2rem">Format standard plaque française : <strong style="color:var(--white)">52 × 11 cm</strong>. Indique juste la quantité souhaitée.</p>
+
+      <div style="margin-bottom:0.9rem">
+        <label class="form-label">Quantité</label>
+        <input type="number" class="form-input" id="orderQty" min="1" max="100" value="1" style="margin:0" oninput="updateRecap()" />
+      </div>
+
+      <div style="margin-bottom:1.2rem">
+        <label class="form-label">Précisions (optionnel)</label>
+        <textarea class="form-input" id="orderNote" rows="2" placeholder="Ex : vinyle brillant, coins carrés..."></textarea>
+      </div>
+
+      <div class="order-recap">
+        <div class="recap-title">Résumé</div>
+        <div id="recapRows"></div>
+      </div>
+
+      <button class="btn-red" onclick="downloadPNG()">📥 Télécharger PNG (haute résolution)</button>
+      <button class="btn-grey" onclick="sendOrder()">📩 Envoyer la commande à TKM</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ════════════════════════════════════════
+   DÉTECTION NAVIGATEUR IN-APP + ORIENTATION
+════════════════════════════════════════ */
+(function() {
+  const ua = navigator.userAgent || '';
+  const isInApp = /Instagram|FBAN|FBAV|Twitter|TikTok|Snapchat|Line|WhatsApp|LinkedInApp/i.test(ua);
+  if (isInApp) document.getElementById('overlayBrowser').style.display = 'flex';
+
+  // Ré-affiche l'overlay portrait si l'user retourne en portrait après avoir fermé
+  window.addEventListener('orientationchange', () => {
+    setTimeout(() => {
+      const isPortrait = window.innerHeight > window.innerWidth;
+      const isMobile   = window.innerWidth <= 768 || /Mobi|Android/i.test(ua);
+      if (isMobile && isPortrait) {
+        document.getElementById('overlayPortrait').style.display = 'flex';
+      } else {
+        document.getElementById('overlayPortrait').style.display = 'none';
+      }
+    }, 300);
+  });
+})();
+
+/* ════════════════════════════════════════
+   CANVAS SETUP
+════════════════════════════════════════ */
+const PLATE_W = 700;
+const PLATE_H = 148;
+const SCALE   = window.devicePixelRatio || 2;
+
+const canvas = document.getElementById('plateCanvas');
+canvas.width  = PLATE_W * SCALE;
+canvas.height = PLATE_H * SCALE;
+canvas.style.width  = PLATE_W + 'px';
+canvas.style.height = PLATE_H + 'px';
+const ctx = canvas.getContext('2d');
+ctx.scale(SCALE, SCALE);
+
+let bgImage  = null;
+let bgType   = 'solid'; // 'solid' | 'image'
+let bgOffsetX = 0;
+let bgOffsetY = 0;
+
+function setBgType(type, btn) {
+  bgType = type;
+  document.querySelectorAll('#bgTypeSolid, #bgTypeImage').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('bgSolidBlock').style.display = type === 'solid' ? '' : 'none';
+  document.getElementById('bgImageBlock').style.display = type === 'image' ? '' : 'none';
+  redraw();
+}
+
+function loadBgImage(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      bgImage = img;
+      document.getElementById('bgImagePreview').style.display = 'block';
+      redraw();
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ════════════════════════════════════════
+   SVG PATHS
+════════════════════════════════════════ */
+const SVG_PATHS = {
+  instagram: ["M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073z","M12 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.791-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4z","M18.406 5.155c0 .796-.645 1.44-1.441 1.44-.795 0-1.439-.644-1.439-1.44s.644-1.44 1.439-1.44c.796 0 1.441.644 1.441 1.44z"],
+  tiktok: ["M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.22 8.22 0 004.84 1.56V6.79a4.85 4.85 0 01-1.07-.1z"],
+  youtube: ["M23.5 6.19a3.02 3.02 0 00-2.12-2.14C19.54 3.5 12 3.5 12 3.5s-7.54 0-9.38.55A3.02 3.02 0 00.5 6.19 31.5 31.5 0 000 12a31.5 31.5 0 00.5 5.81 3.02 3.02 0 002.12 2.14C4.46 20.5 12 20.5 12 20.5s7.54 0 9.38-.55a3.02 3.02 0 002.12-2.14A31.5 31.5 0 0024 12a31.5 31.5 0 00-.5-5.81zM9.75 15.52V8.48L15.5 12l-5.75 3.52z"],
+  snapchat: ["M12.065 2.012c.268 0 .54.013.806.04 2.756.277 4.758 2.32 4.758 5.076 0 .337-.033.68-.055 1.018-.022.338.022.676.088 1.01.2 1.032.876 1.836 2.268 2.11.055.011.11.022.165.033.308.066.605.198.76.462.15.255.1.566-.044.804-.19.31-.496.518-.838.625-.452.14-1.044.268-1.14.814-.088.498.18.94.44 1.332.13.195.302.37.422.577.26.44.196.947-.1 1.347-.308.41-.81.64-1.347.74-.495.09-1.12.19-1.508.554-.38.355-.507.86-.678 1.347-.198.553-.498 1.082-1.02 1.347-.495.252-1.114.19-1.642.033-.528-.157-1.064-.36-1.624-.36-.56 0-1.096.203-1.624.36-.528.157-1.147.22-1.642-.033-.522-.265-.822-.794-1.02-1.347-.17-.487-.298-.992-.678-1.347-.388-.364-1.013-.464-1.508-.554-.537-.1-1.04-.33-1.347-.74-.296-.4-.36-.907-.1-1.347.12-.207.292-.382.422-.577.26-.392.528-.834.44-1.332-.096-.546-.688-.674-1.14-.814-.342-.107-.648-.315-.838-.625-.144-.238-.194-.549-.044-.804.155-.264.452-.396.76-.462.055-.011.11-.022.165-.033 1.392-.274 2.068-1.078 2.268-2.11.066-.334.11-.672.088-1.01-.022-.338-.055-.681-.055-1.018 0-2.756 2.002-4.799 4.758-5.076.266-.027.538-.04.806-.04z"]
+};
+
+function drawIcon(c, network, x, y, size, color) {
+  const sc = size / 24;
+  c.save(); c.translate(x, y); c.scale(sc, sc); c.fillStyle = color;
+  for (const d of SVG_PATHS[network]) c.fill(new Path2D(d));
+  c.restore();
+}
+
+/* ════════════════════════════════════════
+   STATE
+════════════════════════════════════════ */
+let elements = []; // {id, type, x, y, w, h, ...props}
+let selected = null;
+let tool = 'move';
+let idCnt = 0;
+let drag = null; // {type:'move'|'resize', startX, startY, origX, origY, origW, origH}
+
+/* ════════════════════════════════════════
+   DRAW
+════════════════════════════════════════ */
+function hexToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+function redraw() {
+  document.getElementById('bgOpacityVal').textContent  = document.getElementById('bgOpacity').value + '%';
+  document.getElementById('borderRadiusVal').textContent = document.getElementById('borderRadius').value + 'px';
+
+  ctx.clearRect(0, 0, PLATE_W, PLATE_H);
+
+  const bgAlpha = document.getElementById('bgOpacity').value / 100;
+  const brdCol  = document.getElementById('borderColor').value;
+  const brdW    = parseInt(document.getElementById('borderWidth').value) || 0;
+  const radius  = parseInt(document.getElementById('borderRadius').value) || 0;
+
+  // Clip to rounded rect
+  ctx.save();
+  roundRect(ctx, 0, 0, PLATE_W, PLATE_H, radius);
+  ctx.clip();
+
+  // Draw background
+  if (bgType === 'image' && bgImage) {
+    const scale = Math.max(PLATE_W / bgImage.width, PLATE_H / bgImage.height);
+    const dw = bgImage.width * scale;
+    const dh = bgImage.height * scale;
+    const dx = (PLATE_W - dw) / 2 + bgOffsetX;
+    const dy = (PLATE_H - dh) / 2 + bgOffsetY;
+    ctx.globalAlpha = bgAlpha;
+    ctx.drawImage(bgImage, dx, dy, dw, dh);
+    ctx.globalAlpha = 1;
+  } else {
+    const bgCol = document.getElementById('bgColor').value;
+    ctx.fillStyle = hexToRgba(bgCol, bgAlpha);
+    ctx.fillRect(0, 0, PLATE_W, PLATE_H);
+  }
+
+  ctx.restore();
+
+  // Border
+  if (brdW > 0) {
+    ctx.save();
+    roundRect(ctx, 0, 0, PLATE_W, PLATE_H, radius);
+    ctx.strokeStyle = brdCol;
+    ctx.lineWidth = brdW;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // Elements
+  for (const el of elements) {
+    ctx.save();
+    if (el.type === 'text') {
+      ctx.font = `${el.weight || 400} ${el.size}px '${el.font}', sans-serif`;
+      ctx.fillStyle = el.color;
+      ctx.textBaseline = 'top';
+      ctx.fillText(el.text, el.x, el.y);
+    } else if (el.type === 'icon') {
+      drawIcon(ctx, el.network, el.x, el.y, el.size, el.color);
+    }
+    ctx.restore();
+
+    if (el === selected) {
+      const b = getBounds(el);
+      ctx.save();
+      ctx.strokeStyle = '#E0160A';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4,3]);
+      ctx.strokeRect(b.x - 4, b.y - 4, b.w + 8, b.h + 8);
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#E0160A';
+      ctx.fillRect(b.x + b.w + 4 - 8, b.y + b.h + 4 - 8, 10, 10);
+      ctx.restore();
+    }
+  }
+
+  updateRecap();
+}
+
+function roundRect(c, x, y, w, h, r) {
+  c.beginPath();
+  c.moveTo(x + r, y);
+  c.lineTo(x + w - r, y);
+  c.quadraticCurveTo(x + w, y, x + w, y + r);
+  c.lineTo(x + w, y + h - r);
+  c.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  c.lineTo(x + r, y + h);
+  c.quadraticCurveTo(x, y + h, x, y + h - r);
+  c.lineTo(x, y + r);
+  c.quadraticCurveTo(x, y, x + r, y);
+  c.closePath();
+}
+
+/* ════════════════════════════════════════
+   BOUNDS HELPER
+════════════════════════════════════════ */
+function getBounds(el) {
+  if (el.type === 'text') {
+    ctx.font = `${el.weight||400} ${el.size}px '${el.font}', sans-serif`;
+    const m = ctx.measureText(el.text);
+    return { x: el.x, y: el.y, w: m.width, h: el.size * 1.2 };
+  } else {
+    return { x: el.x, y: el.y, w: el.size, h: el.size };
+  }
+}
+
+/* ════════════════════════════════════════
+   HIT TEST
+════════════════════════════════════════ */
+function hitTest(mx, my) {
+  for (let i = elements.length - 1; i >= 0; i--) {
+    const b = getBounds(elements[i]);
+    if (mx >= b.x - 4 && mx <= b.x + b.w + 4 && my >= b.y - 4 && my <= b.y + b.h + 4)
+      return elements[i];
+  }
+  return null;
+}
+
+function hitResize(el, mx, my) {
+  const b = getBounds(el);
+  const hx = b.x + b.w + 4 - 8;
+  const hy = b.y + b.h + 4 - 8;
+  return mx >= hx && mx <= hx + 10 && my >= hy && my <= hy + 10;
+}
+
+/* ════════════════════════════════════════
+   POINTER EVENTS
+════════════════════════════════════════ */
+function getPos(e) {
+  const rect = canvas.getBoundingClientRect();
+  const cx = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+  const cy = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+  return { x: cx, y: cy };
+}
+
+canvas.addEventListener('pointerdown', e => {
+  e.preventDefault();
+  const p = getPos(e);
+
+  // Mode déplacer fond
+  if (tool === 'bg' && bgType === 'image' && bgImage) {
+    drag = { type: 'bg', startX: p.x, startY: p.y, origX: bgOffsetX, origY: bgOffsetY };
+    canvas.style.cursor = 'grabbing';
+    return;
+  }
+
+  if (tool === 'move' || tool === 'resize') {
+    if (selected && hitResize(selected, p.x, p.y)) {
+      drag = { type: 'resize', startX: p.x, startY: p.y, origSize: selected.size };
+    } else {
+      const hit = hitTest(p.x, p.y);
+      selected = hit;
+      if (hit) {
+        drag = { type: 'move', startX: p.x, startY: p.y, origX: hit.x, origY: hit.y };
+        canvas.style.cursor = 'grabbing';
+      }
+      updateElementList();
+    }
+  }
+  redraw();
+});
+
+canvas.addEventListener('pointermove', e => {
+  e.preventDefault();
+  if (!drag) return;
+  const p = getPos(e);
+  const dx = p.x - drag.startX;
+  const dy = p.y - drag.startY;
+
+  if (drag.type === 'bg') {
+    bgOffsetX = drag.origX + dx;
+    bgOffsetY = drag.origY + dy;
+    redraw();
+    return;
+  }
+
+  if (!selected) return;
+  if (drag.type === 'move') {
+    selected.x = drag.origX + dx;
+    selected.y = drag.origY + dy;
+  } else if (drag.type === 'resize') {
+    const delta = Math.max(dx, dy);
+    selected.size = Math.max(10, drag.origSize + delta);
+  }
+  redraw();
+});
+
+canvas.addEventListener('pointerup', () => {
+  drag = null;
+  canvas.style.cursor = 'default';
+});
+
+canvas.addEventListener('touchstart', e => e.preventDefault(), { passive: false });
+
+/* ════════════════════════════════════════
+   ADD ELEMENTS
+════════════════════════════════════════ */
+function addText() {
+  const txt = document.getElementById('newText').value.trim();
+  if (!txt) return;
+  const font  = document.getElementById('newFont').value;
+  const size  = parseInt(document.getElementById('newFontSize').value) || 28;
+  const color = document.getElementById('newTextColor').value;
+  const weight = font === 'Montserrat' || font === 'Raleway' ? 900
+               : font === 'Oswald' || font === 'Teko' ? 700 : 400;
+
+  const el = { id: idCnt++, type: 'text', text: txt, font, size, color, weight, x: 40, y: PLATE_H/2 - size/2 };
+  elements.push(el);
+  selected = el;
+  updateElementList();
+  redraw();
+}
+
+function addSocial(network) {
+  const size  = parseInt(document.getElementById('logoSize').value) || 36;
+  const color = document.getElementById('logoColor').value;
+  const el = { id: idCnt++, type: 'icon', network, size, color, x: PLATE_W/2 - size/2, y: PLATE_H/2 - size/2 };
+  elements.push(el);
+  selected = el;
+  updateElementList();
+  redraw();
+}
+
+/* ════════════════════════════════════════
+   TOOLS
+════════════════════════════════════════ */
+function setTool(t, btn) {
+  tool = t;
+  document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function deleteSelected() {
+  if (!selected) return;
+  elements = elements.filter(e => e !== selected);
+  selected = null;
+  updateElementList();
+  redraw();
+}
+
+function clearAll() {
+  if (!confirm('Tout effacer ?')) return;
+  elements = [];
+  selected = null;
+  updateElementList();
+  redraw();
+}
+
+/* ════════════════════════════════════════
+   ELEMENT LIST
+════════════════════════════════════════ */
+function updateElementList() {
+  const list = document.getElementById('elementList');
+  if (!elements.length) { list.innerHTML = '<p style="font-size:.8rem;color:var(--grey)">Aucun élément pour l\'instant.</p>'; return; }
+  list.innerHTML = elements.map(el => {
+    const name = el.type === 'text' ? `"${el.text.substring(0,14)}"` : el.network;
+    return `<div class="element-item${el===selected?' selected':''}" onclick="selectEl(${el.id})">
+      <span class="element-item-name">${el.type === 'icon' ? '⬡ ' : '✎ '}${name}</span>
+      <button class="element-del" onclick="event.stopPropagation();deleteById(${el.id})">✕</button>
+    </div>`;
+  }).join('');
+  document.getElementById('selectedInfo').textContent = selected ? `Sélectionné : ${selected.type==='text'?'"'+selected.text+'"':selected.network}` : '';
+}
+
+function selectEl(id) {
+  selected = elements.find(e => e.id === id) || null;
+  updateElementList();
+  redraw();
+}
+
+function deleteById(id) {
+  elements = elements.filter(e => e.id !== id);
+  if (selected?.id === id) selected = null;
+  updateElementList();
+  redraw();
+}
+
+/* ════════════════════════════════════════
+   ORDER + RECAP
+════════════════════════════════════════ */
+function updateRecap() {
+  const qty  = document.getElementById('orderQty')?.value || 1;
+  const note = document.getElementById('orderNote')?.value?.trim() || '';
+  const bgLabel = bgType === 'image' ? 'Image personnalisée' : document.getElementById('bgColor').value;
+  const rows = [
+    ['Format', '52 × 11 cm (standard FR)'],
+    ['Fond', bgLabel],
+    ['Opacité fond', document.getElementById('bgOpacity').value + '%'],
+    ['Éléments', elements.length + ' ajouté' + (elements.length > 1 ? 's' : '')],
+    ['Quantité', qty + ' pièce' + (qty > 1 ? 's' : '')],
+  ];
+  if (note) rows.push(['Note', note]);
+  const el = document.getElementById('recapRows');
+  if (el) el.innerHTML = rows.map(([k,v]) =>
+    `<div class="recap-row"><span class="recap-key">${k}</span><span class="recap-val">${v}</span></div>`
+  ).join('');
+}
+
+/* ════════════════════════════════════════
+   EXPORT
+════════════════════════════════════════ */
+function renderToCanvas(exportScale) {
+  const tmp = document.createElement('canvas');
+  tmp.width  = PLATE_W * exportScale;
+  tmp.height = PLATE_H * exportScale;
+  const c = tmp.getContext('2d');
+  c.scale(exportScale, exportScale);
+
+  const bgAlpha = document.getElementById('bgOpacity').value / 100;
+  const brdCol  = document.getElementById('borderColor').value;
+  const brdW    = parseInt(document.getElementById('borderWidth').value) || 0;
+  const radius  = parseInt(document.getElementById('borderRadius').value) || 0;
+
+  c.save();
+  roundRect(c, 0, 0, PLATE_W, PLATE_H, radius);
+  c.clip();
+
+  if (bgType === 'image' && bgImage) {
+    const scale = Math.max(PLATE_W / bgImage.width, PLATE_H / bgImage.height);
+    const dw = bgImage.width * scale, dh = bgImage.height * scale;
+    c.globalAlpha = bgAlpha;
+    c.drawImage(bgImage, (PLATE_W-dw)/2 + bgOffsetX, (PLATE_H-dh)/2 + bgOffsetY, dw, dh);
+    c.globalAlpha = 1;
+  } else {
+    const bgCol = document.getElementById('bgColor').value;
+    c.fillStyle = hexToRgba(bgCol, bgAlpha);
+    c.fillRect(0, 0, PLATE_W, PLATE_H);
+  }
+  c.restore();
+
+  if (brdW > 0) { c.save(); roundRect(c,0,0,PLATE_W,PLATE_H,radius); c.strokeStyle=brdCol; c.lineWidth=brdW; c.stroke(); c.restore(); }
+
+  for (const el of elements) {
+    c.save();
+    if (el.type==='text') {
+      c.font=`${el.weight||400} ${el.size}px '${el.font}', sans-serif`;
+      c.fillStyle=el.color; c.textBaseline='top';
+      c.fillText(el.text, el.x, el.y);
+    } else if (el.type==='icon') {
+      drawIcon(c, el.network, el.x, el.y, el.size, el.color);
+    }
+    c.restore();
+  }
+  return tmp;
+}
+
+function downloadPNG() {
+  const tmp = renderToCanvas(4);
+  const a = document.createElement('a');
+  a.download = 'cache_plaque_tkm.png';
+  a.href = tmp.toDataURL('image/png'); a.click();
+}
+
+function sendOrder() {
+  const qty  = document.getElementById('orderQty').value || 1;
+  const note = document.getElementById('orderNote').value.trim();
+  const elDesc = elements.map(el => el.type==='text' ? `texte "${el.text}"` : `logo ${el.network}`).join(', ');
+  const bgLabel = bgType === 'image' ? 'image personnalisée' : document.getElementById('bgColor').value;
+  const subject = encodeURIComponent('Commande Cache Plaque – TKM');
+  const bodyText = [
+    'Bonjour TKM,',
+    '',
+    'Je souhaite commander un cache plaque personnalisé :',
+    '',
+    '- Format : 52 × 11 cm (standard français)',
+    `- Fond : ${bgLabel}`,
+    `- Opacité fond : ${document.getElementById('bgOpacity').value}%`,
+    `- Éléments : ${elDesc || 'voir visuel joint'}`,
+    `- Quantité : ${qty}`,
+    note ? `- Précisions : ${note}` : '',
+    '',
+    'Merci !'
+  ].filter(Boolean).join('\n');
+  const a = document.createElement('a');
+  a.href = `mailto:contact@tkm-auto.fr?subject=${subject}&body=${encodeURIComponent(bodyText)}`;
+  a.target = '_blank';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
+/* ════════════════════════════════════════
+   INIT
+════════════════════════════════════════ */
+document.fonts.ready.then(() => {
+  redraw();
+  updateElementList();
+  updateRecap();
+});
+</script>
+</body>
+</html>
