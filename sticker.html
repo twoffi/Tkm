@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TKM – Configurateur Sticker Réseau Social</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;600;700&family=Barlow+Condensed:wght@600;700&family=Montserrat:wght@700;900&family=Oswald:wght@700&family=Raleway:wght@700;900&family=Russo+One&family=Teko:wght@700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --red: #E0160A; --red-dark: #a50f07;
+      --bg: #0a0a0a; --bg2: #111; --bg3: #1a1a1a;
+      --white: #f5f5f5; --grey: #888;
+      --border: rgba(255,255,255,0.07);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--white); overflow-x: hidden; min-height: 100vh; }
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 5%; background: rgba(10,10,10,0.95); backdrop-filter: blur(14px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+    .nav-logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: 0.1em; color: var(--white); text-decoration: none; }
+    .nav-logo span { color: var(--red); }
+    .nav-back { font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 0.85rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--grey); text-decoration: none; transition: color 0.2s; }
+    .nav-back:hover { color: var(--white); }
+    .page-header { text-align: center; padding: 3rem 5% 1.5rem; }
+    .page-label { font-family: 'Barlow Condensed', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.25em; text-transform: uppercase; color: var(--red); margin-bottom: 0.6rem; }
+    .page-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(2.5rem,6vw,5rem); line-height: 1; margin-bottom: 0.6rem; }
+    .page-sub { color: var(--grey); font-size: 1rem; max-width: 500px; margin: 0 auto; line-height: 1.6; }
+    .configurator { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; padding: 2rem 5% 4rem; max-width: 1300px; margin: 0 auto; }
+    .panel { background: var(--bg2); border: 1px solid var(--border); padding: 2rem; margin-bottom: 1.5rem; }
+    .panel:last-child { margin-bottom: 0; }
+    .panel-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 0.08em; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem; }
+    .panel-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .network-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 0.7rem; margin-bottom: 1.5rem; }
+    .network-btn { background: var(--bg3); border: 2px solid var(--border); color: var(--white); padding: 0.9rem 0.3rem; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 0.4rem; transition: all 0.2s; clip-path: polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%); }
+    .network-btn svg { width: 26px; height: 26px; }
+    .network-btn:hover { border-color: rgba(255,255,255,0.2); }
+    .network-btn.active { border-color: var(--red); background: rgba(224,22,10,0.1); }
+    .network-name { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; }
+    .form-label { font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--grey); margin-bottom: 0.4rem; display: block; }
+    .form-input { width: 100%; background: var(--bg3); border: 1px solid var(--border); color: var(--white); font-family: 'Barlow', sans-serif; font-size: 1rem; padding: 0.7rem 1rem; outline: none; transition: border-color 0.2s; }
+    .form-input:focus { border-color: var(--red); }
+    .form-input::placeholder { color: #444; }
+    .font-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 0.5rem; }
+    .font-btn { background: var(--bg3); border: 2px solid var(--border); color: var(--white); padding: 0.8rem 0.4rem; cursor: pointer; text-align: center; transition: all 0.2s; clip-path: polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%); }
+    .font-btn:hover { border-color: rgba(255,255,255,0.2); }
+    .font-btn.active { border-color: var(--red); background: rgba(224,22,10,0.1); }
+    .font-label { font-size: 0.6rem; color: var(--grey); margin-top: 0.2rem; font-family: 'Barlow', sans-serif; }
+    .color-grid { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.3rem; }
+    .color-swatch { width: 34px; height: 34px; border: 2px solid transparent; cursor: pointer; clip-path: polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%); transition: transform 0.15s; }
+    .color-swatch:hover, .color-swatch.active { transform: scale(1.15); border-color: var(--white); }
+    .color-custom { width: 34px; height: 34px; border: 2px solid var(--border); cursor: pointer; clip-path: polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%); background: conic-gradient(red,yellow,lime,cyan,blue,magenta,red); position: relative; overflow: hidden; }
+    .color-custom input[type=color] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .slider-wrap { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.3rem; }
+    .slider { flex: 1; -webkit-appearance: none; height: 3px; background: var(--border); outline: none; }
+    .slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; background: var(--red); cursor: pointer; clip-path: polygon(50% 0%,100% 50%,50% 100%,0% 50%); }
+    .slider-val { font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; color: var(--red); min-width: 3rem; text-align: right; }
+    .spacing-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 0.4rem; }
+    .spacing-btn { background: var(--bg3); border: 2px solid var(--border); color: var(--grey); padding: 0.5rem; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; text-align: center; transition: all 0.2s; clip-path: polygon(5px 0%,100% 0%,calc(100% - 5px) 100%,0% 100%); }
+    .spacing-btn:hover { border-color: rgba(255,255,255,0.2); color: var(--white); }
+    .spacing-btn.active { border-color: var(--red); color: var(--white); background: rgba(224,22,10,0.1); }
+    .preview-panel { display: flex; flex-direction: column; gap: 1.5rem; }
+    .preview-box-wrap, .export-panel { background: var(--bg2); border: 1px solid var(--border); padding: 1.8rem; }
+    .panel-title-sm { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 0.08em; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem; }
+    .panel-title-sm::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .bg-switcher { display: flex; gap: 0.4rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .bg-btn { padding: 0.3rem 0.8rem; font-family: 'Barlow Condensed', sans-serif; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; border: 1px solid var(--border); background: var(--bg3); color: var(--grey); transition: all 0.2s; clip-path: polygon(5px 0%,100% 0%,calc(100% - 5px) 100%,0% 100%); }
+    .bg-btn.active { background: var(--red); border-color: var(--red); color: #fff; }
+    .canvas-wrap { width: 100%; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; min-height: 140px; transition: background 0.3s; background: #0a0a0a; }
+    .canvas-wrap.bg-light { background: #f0f0f0; }
+    .canvas-wrap.bg-check { background-image: linear-gradient(45deg,#ccc 25%,transparent 25%),linear-gradient(-45deg,#ccc 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#ccc 75%),linear-gradient(-45deg,transparent 75%,#ccc 75%); background-size: 16px 16px; background-position: 0 0,0 8px,8px -8px,-8px 0; background-color: #fff; }
+    .canvas-wrap.bg-car { background: linear-gradient(135deg,#1a1a2e,#16213e); }
+    #liveCanvas { max-width: 100%; height: auto; display: block; margin: 0 auto; }
+    .dimensions { display: flex; justify-content: center; gap: 2rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+    .dim-item { text-align: center; }
+    .dim-val { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; color: var(--red); }
+    .dim-label { font-size: 0.65rem; color: var(--grey); letter-spacing: 0.1em; text-transform: uppercase; }
+    .plotter-wrap { background: #fff; padding: 1.5rem 2rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1.2rem; min-height: 100px; position: relative; }
+    .plotter-wrap::before { content: 'RENDU PLOTTER — PRÊT À DÉCOUPER'; position: absolute; top: 0.4rem; left: 0.6rem; font-family: 'Barlow Condensed', sans-serif; font-size: 0.55rem; font-weight: 700; letter-spacing: 0.15em; color: #ccc; }
+    #plotterCanvas { max-width: 100%; height: auto; display: block; margin: 0 auto; }
+    .export-tips { background: var(--bg3); border-left: 3px solid var(--red); padding: 1rem 1.2rem; font-size: 0.87rem; color: var(--grey); line-height: 1.65; margin-bottom: 1.2rem; }
+    .export-tips strong { color: var(--white); }
+    .btn-primary { background: var(--red); color: #fff; padding: 0.85rem 2rem; border: none; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 0.92rem; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; width: 100%; clip-path: polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%); transition: background 0.2s; margin-bottom: 0.6rem; }
+    .btn-primary:hover { background: var(--red-dark); }
+    .btn-secondary { background: transparent; color: var(--white); padding: 0.85rem 2rem; border: 1px solid var(--border); font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 0.92rem; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; width: 100%; clip-path: polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%); transition: all 0.2s; }
+    .btn-secondary:hover { border-color: var(--red); color: var(--red); }
+
+    .order-recap { background: var(--bg3); border: 1px solid var(--border); padding: 1.2rem 1.5rem; }
+    .recap-title { font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--red); margin-bottom: 1rem; }
+    .recap-grid { display: flex; flex-direction: column; gap: 0.55rem; }
+    .recap-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; padding-bottom: 0.55rem; border-bottom: 1px solid var(--border); }
+    .recap-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .recap-key { color: var(--grey); }
+    .recap-val { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 1rem; color: var(--white); }
+    .recap-val.accent { color: var(--red); }
+
+    @media (max-width: 900px) { .configurator { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">TK<span>M</span></a>
+  <a href="index.html" class="nav-back">← Retour au site</a>
+</nav>
+
+<div class="page-header">
+  <div class="page-label">Personnalisation</div>
+  <h1 class="page-title">Configurateur<br><span style="color:var(--red)">Sticker</span></h1>
+  <p class="page-sub">Choisis ton réseau, entre ton pseudo, règle le style — et télécharge le rendu prêt pour la découpe plotter.</p>
+</div>
+
+<div class="configurator">
+  <!-- CONTROLS -->
+  <div>
+    <div class="panel">
+      <div class="panel-title">01 — Réseau Social</div>
+      <div class="network-grid">
+        <button class="network-btn active" data-net="instagram" onclick="setNetwork(this)">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.791-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+          <span class="network-name">Instagram</span>
+        </button>
+        <button class="network-btn" data-net="tiktok" onclick="setNetwork(this)">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.22 8.22 0 004.84 1.56V6.79a4.85 4.85 0 01-1.07-.1z"/></svg>
+          <span class="network-name">TikTok</span>
+        </button>
+        <button class="network-btn" data-net="youtube" onclick="setNetwork(this)">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.19a3.02 3.02 0 00-2.12-2.14C19.54 3.5 12 3.5 12 3.5s-7.54 0-9.38.55A3.02 3.02 0 00.5 6.19 31.5 31.5 0 000 12a31.5 31.5 0 00.5 5.81 3.02 3.02 0 002.12 2.14C4.46 20.5 12 20.5 12 20.5s7.54 0 9.38-.55a3.02 3.02 0 002.12-2.14A31.5 31.5 0 0024 12a31.5 31.5 0 00-.5-5.81zM9.75 15.52V8.48L15.5 12l-5.75 3.52z"/></svg>
+          <span class="network-name">YouTube</span>
+        </button>
+        <button class="network-btn" data-net="snapchat" onclick="setNetwork(this)">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.166.006C9.813-.02 6.25.636 4.338 4.054c-.8 1.427-.675 3.763-.675 5.028-.51.228-1.046.163-1.656.334-.52.15-.927.53-.927 1.078 0 .714.643 1.088 1.24 1.268l.406.096.139.032c.176.046.345.112.508.198.178.098.264.21.264.36 0 .2-.16.43-.322.637-.394.506-1.067 1.182-1.067 2.297 0 .635.228 1.088.655 1.285.433.2 1.017.158 1.624.103.523-.048 1.065-.098 1.505.036.524.16.933.563 1.35 1.218.337.524.613 1.157 1.393 1.157.34 0 .64-.105.922-.202.4-.136.773-.264 1.31-.264.536 0 .897.125 1.286.259.286.1.59.207.95.207.826 0 1.072-.668 1.443-1.206.414-.602.84-1.017 1.374-1.17.44-.13.98-.082 1.5-.034.604.057 1.184.1 1.618-.1.428-.197.657-.65.657-1.285 0-1.115-.673-1.79-1.067-2.297-.16-.207-.322-.437-.322-.637 0-.15.086-.262.264-.36.163-.086.332-.152.508-.198l.139-.032.406-.096c.598-.18 1.24-.554 1.24-1.268 0-.549-.407-.928-.927-1.078-.61-.17-1.146-.106-1.656-.334 0-1.264.124-3.6-.675-5.028C17.75.636 14.52-.02 12.166.006z"/></svg>
+          <span class="network-name">Snapchat</span>
+        </button>
+      </div>
+      <label class="form-label">Ton pseudo *</label>
+      <input type="text" class="form-input" id="username" placeholder="@ton_pseudo" maxlength="30" oninput="render()" />
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">02 — Police</div>
+      <div class="font-grid">
+        <button class="font-btn active" data-font="Bebas Neue" data-weight="400" onclick="setFont(this)">
+          <div style="font-family:'Bebas Neue';font-size:1.2rem">BEBAS NEUE</div>
+          <div class="font-label">Bebas Neue</div>
+        </button>
+        <button class="font-btn" data-font="Montserrat" data-weight="900" onclick="setFont(this)">
+          <div style="font-family:'Montserrat';font-weight:900;font-size:1rem">MONTSERRAT</div>
+          <div class="font-label">Montserrat Black</div>
+        </button>
+        <button class="font-btn" data-font="Oswald" data-weight="700" onclick="setFont(this)">
+          <div style="font-family:'Oswald';font-weight:700;font-size:1.1rem">OSWALD</div>
+          <div class="font-label">Oswald Bold</div>
+        </button>
+        <button class="font-btn" data-font="Raleway" data-weight="900" onclick="setFont(this)">
+          <div style="font-family:'Raleway';font-weight:900;font-size:1rem">RALEWAY</div>
+          <div class="font-label">Raleway Black</div>
+        </button>
+        <button class="font-btn" data-font="Russo One" data-weight="400" onclick="setFont(this)">
+          <div style="font-family:'Russo One';font-size:1rem">RUSSO ONE</div>
+          <div class="font-label">Russo One</div>
+        </button>
+        <button class="font-btn" data-font="Teko" data-weight="700" onclick="setFont(this)">
+          <div style="font-family:'Teko';font-weight:700;font-size:1.3rem">TEKO</div>
+          <div class="font-label">Teko Bold</div>
+        </button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">03 — Couleur</div>
+      <label class="form-label">Couleur du texte & logo</label>
+      <div class="color-grid">
+        <div class="color-swatch active" style="background:#fff" data-color="#ffffff" onclick="setColor(this)"></div>
+        <div class="color-swatch" style="background:#E0160A" data-color="#E0160A" onclick="setColor(this)"></div>
+        <div class="color-swatch" style="background:#000;border:1px solid #444" data-color="#000000" onclick="setColor(this)"></div>
+        <div class="color-swatch" style="background:#FFD700" data-color="#FFD700" onclick="setColor(this)"></div>
+        <div class="color-swatch" style="background:#00bfff" data-color="#00bfff" onclick="setColor(this)"></div>
+        <div class="color-swatch" style="background:#39FF14" data-color="#39FF14" onclick="setColor(this)"></div>
+        <div class="color-swatch" style="background:#ff69b4" data-color="#ff69b4" onclick="setColor(this)"></div>
+        <div class="color-custom"><input type="color" id="customColor" value="#ffffff" oninput="setCustomColor(this.value)" /></div>
+      </div>
+      <label class="form-label" style="margin-top:0.5rem">Espacement</label>
+      <div class="spacing-grid">
+        <button class="spacing-btn" data-gap="0.25" onclick="setSpacing(this)">Serré</button>
+        <button class="spacing-btn active" data-gap="0.55" onclick="setSpacing(this)">Normal</button>
+        <button class="spacing-btn" data-gap="1.1" onclick="setSpacing(this)">Large</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PREVIEW -->
+  <div class="preview-panel">
+    <div class="preview-box-wrap">
+      <div class="panel-title-sm">Aperçu Live</div>
+      <div class="bg-switcher">
+        <button class="bg-btn active" data-bg="bg-dark" onclick="setBg(this)">Sombre</button>
+        <button class="bg-btn" data-bg="bg-light" onclick="setBg(this)">Clair</button>
+        <button class="bg-btn" data-bg="bg-check" onclick="setBg(this)">Transparent</button>
+        <button class="bg-btn" data-bg="bg-car" onclick="setBg(this)">Voiture</button>
+      </div>
+      <div class="canvas-wrap" id="canvasWrap">
+        <canvas id="liveCanvas"></canvas>
+      </div>
+    </div>
+
+    <div class="export-panel">
+      <div class="panel-title-sm">📋 Récapitulatif commande</div>
+
+      <div class="order-info">
+        <p style="font-size:.88rem;color:var(--grey);line-height:1.6;margin-bottom:1.5rem">
+          Le rendu ci-dessus est à titre visuel. Choisis ici la taille réelle que tu veux — la largeur se calcule automatiquement selon ton pseudo et ton logo.
+        </p>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+          <div>
+            <label class="form-label">Hauteur souhaitée (cm)</label>
+            <input type="number" class="form-input" id="orderHeight" min="1" max="50" step="0.5" value="5" oninput="updateOrder()" />
+          </div>
+          <div>
+            <label class="form-label">Largeur calculée (cm)</label>
+            <input type="text" class="form-input" id="orderWidth" readonly style="color:var(--red);font-family:'Bebas Neue',sans-serif;font-size:1.1rem;cursor:not-allowed;opacity:0.8" />
+          </div>
+        </div>
+
+        <div style="margin-bottom:1rem">
+          <label class="form-label">Quantité</label>
+          <input type="number" class="form-input" id="orderQty" min="1" max="100" value="1" oninput="updateOrder()" />
+        </div>
+
+        <div style="margin-bottom:1.5rem">
+          <label class="form-label">Message / précisions (optionnel)</label>
+          <textarea class="form-input" id="orderNote" rows="2" placeholder="Ex : fond noir, coins arrondis, livraison..." style="resize:vertical"></textarea>
+        </div>
+
+        <!-- Récap visuel -->
+        <div class="order-recap" id="orderRecap">
+          <div class="recap-title">Résumé de ta commande</div>
+          <div class="recap-grid" id="recapGrid"></div>
+        </div>
+
+        <button class="btn-primary" style="margin-top:1.2rem" onclick="sendOrder()">📩 Envoyer la commande à TKM</button>
+        <button class="btn-secondary" style="margin-top:0.6rem" onclick="downloadPlotter()">⬛ Télécharger version plotter</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Canvas plotter caché — utilisé pour le ratio et le téléchargement -->
+<canvas id="plotterCanvas" style="display:none"></canvas>
+
+<script>
+const S = { network:'instagram', font:'Bebas Neue', fontWeight:'400', color:'#ffffff', heightCm:2, gap:0.55 };
+
+// 1cm = 37.795px à 96 DPI
+const CM = 37.795;
+
+/* SVG path data per network (viewBox 0 0 24 24) */
+const SVG_PATHS = {
+  instagram: [
+    "M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073z",
+    "M12 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.791-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4z",
+    "M18.406 5.155c0 .796-.645 1.44-1.441 1.44-.795 0-1.439-.644-1.439-1.44s.644-1.44 1.439-1.44c.796 0 1.441.644 1.441 1.44z"
+  ],
+  tiktok: [
+    "M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.22 8.22 0 004.84 1.56V6.79a4.85 4.85 0 01-1.07-.1z"
+  ],
+  youtube: [
+    "M23.5 6.19a3.02 3.02 0 00-2.12-2.14C19.54 3.5 12 3.5 12 3.5s-7.54 0-9.38.55A3.02 3.02 0 00.5 6.19 31.5 31.5 0 000 12a31.5 31.5 0 00.5 5.81 3.02 3.02 0 002.12 2.14C4.46 20.5 12 20.5 12 20.5s7.54 0 9.38-.55a3.02 3.02 0 002.12-2.14A31.5 31.5 0 0024 12a31.5 31.5 0 00-.5-5.81zM9.75 15.52V8.48L15.5 12l-5.75 3.52z"
+  ],
+  snapchat: [
+    "M12.065 2.012c.268 0 .54.013.806.04 2.756.277 4.758 2.32 4.758 5.076 0 .337-.033.68-.055 1.018-.022.338.022.676.088 1.01.2 1.032.876 1.836 2.268 2.11.055.011.11.022.165.033.308.066.605.198.76.462.15.255.1.566-.044.804-.19.31-.496.518-.838.625-.452.14-1.044.268-1.14.814-.088.498.18.94.44 1.332.13.195.302.37.422.577.26.44.196.947-.1 1.347-.308.41-.81.64-1.347.74-.495.09-1.12.19-1.508.554-.38.355-.507.86-.678 1.347-.198.553-.498 1.082-1.02 1.347-.495.252-1.114.19-1.642.033-.528-.157-1.064-.36-1.624-.36-.56 0-1.096.203-1.624.36-.528.157-1.147.22-1.642-.033-.522-.265-.822-.794-1.02-1.347-.17-.487-.298-.992-.678-1.347-.388-.364-1.013-.464-1.508-.554-.537-.1-1.04-.33-1.347-.74-.296-.4-.36-.907-.1-1.347.12-.207.292-.382.422-.577.26-.392.528-.834.44-1.332-.096-.546-.688-.674-1.14-.814-.342-.107-.648-.315-.838-.625-.144-.238-.194-.549-.044-.804.155-.264.452-.396.76-.462.055-.011.11-.022.165-.033 1.392-.274 2.068-1.078 2.268-2.11.066-.334.11-.672.088-1.01-.022-.338-.055-.681-.055-1.018 0-2.756 2.002-4.799 4.758-5.076.266-.027.538-.04.806-.04z"
+  ]
+};
+
+const LABELS = { instagram:'', tiktok:'', youtube:'', snapchat:'' };
+
+/* Draw SVG paths on canvas using Path2D */
+function drawSVGIcon(ctx, network, x, y, size, color) {
+  const scale = size / 24;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(scale, scale);
+  ctx.fillStyle = color;
+  for (const d of SVG_PATHS[network]) {
+    ctx.fill(new Path2D(d));
+  }
+  ctx.restore();
+}
+
+/* Core draw — all sizes derived from target height in px */
+function drawSticker(canvas, bgColor, textColor, renderScale) {
+  const raw = document.getElementById('username').value.trim().replace(/^@+/, '') || 'ton_pseudo';
+
+  // Tout est dérivé d'une seule unité de base = hauteur cible
+  const BASE   = S.heightCm * CM;  // hauteur totale voulue
+  const fs     = BASE * 0.55;      // taille police
+  const iconSz = BASE * 0.72;      // icône légèrement plus grande que le texte
+  const PAD    = BASE * 0.18;      // marges
+  const gapPx  = BASE * 0.12 * (S.gap / 0.55); // espacement
+
+  // Mesure largeur texte
+  const tmp = document.createElement('canvas').getContext('2d');
+  tmp.font = `${S.fontWeight} ${fs}px '${S.font}', sans-serif`;
+  const textW = tmp.measureText(raw).width;
+
+  // Canvas = pile autour du contenu, ratio respecté
+  const W = Math.ceil(PAD + iconSz + gapPx + textW + PAD);
+  const H = Math.ceil(BASE);
+
+  canvas.width  = W * renderScale;
+  canvas.height = H * renderScale;
+
+  const dispW = Math.min(W, 520);
+  const dispH = Math.round(H * dispW / W);
+  canvas.style.width  = dispW + 'px';
+  canvas.style.height = dispH + 'px';
+
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (bgColor) { ctx.fillStyle = bgColor; ctx.fillRect(0, 0, canvas.width, canvas.height); }
+  ctx.scale(renderScale, renderScale);
+
+  // Centrage vertical parfait
+  const midY  = H / 2;
+  const iconY = midY - iconSz / 2;
+  const textY = midY + fs * 0.37;
+
+  drawSVGIcon(ctx, S.network, PAD, iconY, iconSz, textColor);
+
+  ctx.font         = `${S.fontWeight} ${fs}px '${S.font}', sans-serif`;
+  ctx.fillStyle    = textColor;
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText(raw, PAD + iconSz + gapPx, textY);
+
+  return { W, H };
+}
+
+function render() {
+  // Hauteur fixée à 2cm pour le rendu preview
+  const { W, H } = drawSticker(document.getElementById('liveCanvas'), null, S.color, 3);
+  drawSticker(document.getElementById('plotterCanvas'), '#ffffff', '#000000', 5);
+
+  const wCm = (W / CM).toFixed(1);
+  const hCm = (H / CM).toFixed(1);
+  document.getElementById('dimW').textContent     = wCm + ' cm';
+  document.getElementById('dimH').textContent     = hCm + ' cm';
+  document.getElementById('dimRatio').textContent = (W/H).toFixed(2) + ':1';
+
+  // Recalcule la largeur dans le formulaire commande
+  updateOrder();
+}
+
+/* ── Calcule la largeur réelle selon la hauteur choisie par le client ── */
+function getRealRatio() {
+  // On utilise le canvas plotter pour mesurer le ratio exact
+  const tmp = document.createElement('canvas');
+  drawSticker(tmp, '#fff', '#000', 1);
+  return tmp.width / tmp.height;
+}
+
+function updateOrder() {
+  const heightEl = document.getElementById('orderHeight');
+  if (!heightEl) return; // pas encore dans le DOM
+  const h = parseFloat(heightEl.value) || 0;
+  const ratio = getRealRatio();
+  const w = (h * ratio).toFixed(1);
+  document.getElementById('orderWidth').value = w + ' cm';
+
+  // Met à jour le récap
+  const pseudo = document.getElementById('username').value.trim().replace(/^@+/,'') || 'ton_pseudo';
+  const qty    = document.getElementById('orderQty').value || 1;
+  const note   = document.getElementById('orderNote').value.trim();
+  const netMap = { instagram:'Instagram', tiktok:'TikTok', youtube:'YouTube', snapchat:'Snapchat' };
+  const colorNames = { '#ffffff':'Blanc', '#E0160A':'Rouge', '#000000':'Noir', '#FFD700':'Or', '#00bfff':'Bleu ciel', '#39FF14':'Vert néon', '#ff69b4':'Rose' };
+  const colorLabel = colorNames[S.color] || S.color;
+
+  const rows = [
+    ['Réseau',    netMap[S.network]],
+    ['Pseudo',    pseudo],
+    ['Police',    S.font],
+    ['Couleur',   colorLabel],
+    ['Hauteur',   h + ' cm'],
+    ['Largeur',   w + ' cm'],
+    ['Quantité',  qty + ' sticker' + (qty > 1 ? 's' : '')],
+  ];
+  if (note) rows.push(['Note', note]);
+
+  document.getElementById('recapGrid').innerHTML = rows.map(([k,v]) =>
+    `<div class="recap-row"><span class="recap-key">${k}</span><span class="recap-val">${v}</span></div>`
+  ).join('');
+}
+
+function sendOrder() {
+  const pseudo = document.getElementById('username').value.trim().replace(/^@+/,'') || 'ton_pseudo';
+  const h      = parseFloat(document.getElementById('orderHeight').value) || 0;
+  const w      = document.getElementById('orderWidth').value;
+  const qty    = document.getElementById('orderQty').value || 1;
+  const note   = document.getElementById('orderNote').value.trim();
+  const netMap = { instagram:'Instagram', tiktok:'TikTok', youtube:'YouTube', snapchat:'Snapchat' };
+  const colorNames = { '#ffffff':'Blanc', '#E0160A':'Rouge', '#000000':'Noir', '#FFD700':'Or', '#00bfff':'Bleu ciel', '#39FF14':'Vert néon', '#ff69b4':'Rose' };
+
+  const subject = encodeURIComponent(`Commande sticker – ${netMap[S.network]} ${pseudo}`);
+
+  const bodyText = [
+    'Bonjour TKM,',
+    '',
+    'Je souhaite commander un sticker personnalisé :',
+    '',
+    `- Réseau : ${netMap[S.network]}`,
+    `- Pseudo : ${pseudo}`,
+    `- Police : ${S.font}`,
+    `- Couleur : ${colorNames[S.color] || S.color}`,
+    `- Hauteur : ${h} cm`,
+    `- Largeur : ${w}`,
+    `- Quantité : ${qty} sticker${qty > 1 ? 's' : ''}`,
+    note ? `- Précisions : ${note}` : '',
+    '',
+    'Merci !'
+  ].filter(l => l !== null).join('\n');
+
+  const body = encodeURIComponent(bodyText);
+  const mailto = `mailto:contact@tkm-auto.fr?subject=${subject}&body=${body}`;
+
+  const a = document.createElement('a');
+  a.href = mailto;
+  a.target = '_blank';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+function setNetwork(btn) {
+  document.querySelectorAll('.network-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); S.network = btn.dataset.net; render();
+}
+function setFont(btn) {
+  document.querySelectorAll('.font-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); S.font = btn.dataset.font; S.fontWeight = btn.dataset.weight; render();
+}
+function setColor(el) {
+  document.querySelectorAll('.color-swatch').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active'); S.color = el.dataset.color; render();
+}
+function setCustomColor(val) {
+  document.querySelectorAll('.color-swatch').forEach(s=>s.classList.remove('active'));
+  S.color = val; render();
+}
+function setBg(btn) {
+  document.querySelectorAll('.bg-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('canvasWrap').className = 'canvas-wrap ' + btn.dataset.bg;
+}
+function setSpacing(btn) {
+  document.querySelectorAll('.spacing-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); S.gap = +btn.dataset.gap; render();
+}
+function downloadColor() {
+  const tmp = document.createElement('canvas');
+  drawSticker(tmp, null, S.color, 4);
+  const a = document.createElement('a');
+  a.download = 'sticker_tkm_' + S.network + '_couleur.png';
+  a.href = tmp.toDataURL('image/png'); a.click();
+}
+function downloadPlotter() {
+  const tmp = document.createElement('canvas');
+  drawSticker(tmp, '#ffffff', '#000000', 8);
+  const a = document.createElement('a');
+  a.download = 'sticker_tkm_' + S.network + '_plotter.png';
+  a.href = tmp.toDataURL('image/png'); a.click();
+}
+
+document.fonts.ready.then(() => render());
+</script>
+</body>
+</html>
