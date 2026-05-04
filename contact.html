@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TKM – Contact & Devis</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --red: #E0160A; --red-dark: #a50f07;
+      --bg: #080808; --bg2: #0f0f0f; --bg3: #161616;
+      --white: #f0f0f0; --grey: #666; --border: rgba(255,255,255,0.06);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; overflow-x: hidden; }
+
+    /* NAV */
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 5%; background: rgba(8,8,8,0.96); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+    .nav-logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: 0.1em; color: var(--white); text-decoration: none; }
+    .nav-logo span { color: var(--red); }
+    .nav-back { font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 0.82rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--grey); text-decoration: none; transition: color 0.2s; }
+    .nav-back:hover { color: var(--white); }
+
+    /* HERO */
+    .hero {
+      padding: 5rem 5% 3rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: 'CONTACT';
+      position: absolute;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(6rem, 20vw, 16rem);
+      color: rgba(255,255,255,0.018);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      white-space: nowrap;
+      letter-spacing: 0.1em;
+      pointer-events: none;
+    }
+    .hero-label { font-family: 'Barlow Condensed', sans-serif; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.35em; text-transform: uppercase; color: var(--red); margin-bottom: 1rem; }
+    .hero-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(3rem, 8vw, 6rem); line-height: 0.92; margin-bottom: 1.2rem; }
+    .hero-sub { font-family: 'Barlow Condensed', sans-serif; font-size: 1rem; font-weight: 300; letter-spacing: 0.08em; color: var(--grey); max-width: 450px; margin: 0 auto; line-height: 1.65; }
+
+    /* MAIN */
+    .main { padding: 3rem 5% 6rem; max-width: 960px; margin: 0 auto; display: flex; flex-direction: column; gap: 1.5rem; }
+
+    /* CONTACT CARDS */
+    .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+
+    .contact-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      padding: 2.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s, transform 0.2s;
+      text-decoration: none;
+      color: var(--white);
+    }
+    .contact-card::before {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--red);
+      transform: scaleX(0);
+      transition: transform 0.35s cubic-bezier(.16,1,.3,1);
+      transform-origin: left;
+    }
+    .contact-card:hover { border-color: rgba(224,22,10,0.3); transform: translateY(-3px); }
+    .contact-card:hover::before { transform: scaleX(1); }
+
+    .card-icon {
+      width: 56px; height: 56px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem;
+      clip-path: polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);
+      flex-shrink: 0;
+    }
+    .card-icon.red { background: rgba(224,22,10,0.1); border-color: rgba(224,22,10,0.3); }
+
+    .card-label { font-family: 'Barlow Condensed', sans-serif; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.25em; text-transform: uppercase; color: var(--grey); }
+    .card-value { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 0.04em; line-height: 1; }
+    .card-sub { font-size: 0.82rem; color: var(--grey); line-height: 1.5; }
+
+    .card-cta {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700; font-size: 0.78rem;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--red);
+      margin-top: auto;
+      padding-top: 0.5rem;
+    }
+    .card-cta::after { content: '→'; transition: transform 0.2s; }
+    .contact-card:hover .card-cta::after { transform: translateX(4px); }
+
+    /* BIG CARD */
+    .contact-card.full {
+      grid-column: 1 / -1;
+      flex-direction: row;
+      align-items: center;
+      gap: 2rem;
+      padding: 2rem 2.5rem;
+    }
+    .card-body { flex: 1; }
+
+    /* DEVIS FORM */
+    .devis-panel {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      padding: 2.5rem;
+    }
+    .panel-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 0.06em; margin-bottom: 1.8rem; display: flex; align-items: center; gap: 0.6rem; }
+    .panel-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+    .form-field { display: flex; flex-direction: column; gap: 0.4rem; }
+    .form-field.full { grid-column: 1 / -1; }
+    .form-label { font-family: 'Barlow Condensed', sans-serif; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--grey); }
+    .form-input {
+      background: var(--bg3); border: 1px solid var(--border);
+      color: var(--white); font-family: 'Barlow', sans-serif;
+      font-size: 0.95rem; padding: 0.8rem 1rem;
+      outline: none; transition: border-color 0.2s;
+      width: 100%;
+    }
+    .form-input:focus { border-color: var(--red); }
+    .form-input::placeholder { color: #333; }
+    textarea.form-input { resize: vertical; min-height: 110px; }
+    select.form-input { cursor: pointer; }
+    select.form-input option { background: var(--bg3); }
+
+    .btn-submit {
+      width: 100%; background: var(--red); color: #fff; border: none;
+      padding: 1rem 2rem; margin-top: 0.5rem;
+      font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+      font-size: 1rem; letter-spacing: 0.15em; text-transform: uppercase;
+      cursor: pointer;
+      clip-path: polygon(12px 0%,100% 0%,calc(100% - 12px) 100%,0% 100%);
+      transition: background 0.2s;
+    }
+    .btn-submit:hover { background: var(--red-dark); }
+
+    .success-msg {
+      display: none;
+      background: rgba(224,22,10,0.08);
+      border: 1px solid var(--red);
+      color: var(--white);
+      padding: 1rem 1.5rem;
+      font-size: 0.95rem;
+      text-align: center;
+      margin-top: 1rem;
+    }
+
+    /* INFOS BAS */
+    .info-strip {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+      border: 1px solid var(--border);
+      background: var(--bg2);
+    }
+    .info-item {
+      padding: 1.5rem;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .info-item:last-child { border-right: none; }
+    .info-icon { font-size: 1.3rem; }
+    .info-title { font-family: 'Barlow Condensed', sans-serif; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--grey); }
+    .info-value { font-family: 'Barlow Condensed', sans-serif; font-size: 1rem; font-weight: 600; letter-spacing: 0.04em; }
+
+    /* REVEAL */
+    .reveal { opacity: 0; transform: translateY(22px); transition: opacity 0.7s cubic-bezier(.16,1,.3,1), transform 0.7s cubic-bezier(.16,1,.3,1); }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    @media (max-width: 640px) {
+      .contact-grid { grid-template-columns: 1fr; }
+      .contact-card.full { flex-direction: column; align-items: flex-start; }
+      .form-grid { grid-template-columns: 1fr; }
+      .info-strip { grid-template-columns: 1fr; }
+      .info-item { border-right: none; border-bottom: 1px solid var(--border); }
+      .info-item:last-child { border-bottom: none; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">TK<span>M</span></a>
+  <a href="index.html" class="nav-back">← Retour au site</a>
+</nav>
+
+<div class="hero reveal">
+  <div class="hero-label">TKM Auto · Hersin-Coupigny</div>
+  <h1 class="hero-title">Contact &<br><span style="color:var(--red)">Devis</span></h1>
+  <p class="hero-sub">Disponible par mail ou Instagram. Réponse rapide garantie — généralement sous 24h.</p>
+</div>
+
+<div class="main">
+
+  <!-- CARTES CONTACT -->
+  <div class="contact-grid reveal">
+
+    <!-- EMAIL -->
+    <a class="contact-card" href="mailto:contact@tkm-auto.fr">
+      <div class="card-icon red">✉️</div>
+      <div>
+        <div class="card-label">Email</div>
+        <div class="card-value" style="font-size:1.2rem">contact@tkm-auto.fr</div>
+      </div>
+      <div class="card-sub">Pour vos devis, questions et projets. On répond sous 24h.</div>
+      <div class="card-cta">Envoyer un mail</div>
+    </a>
+
+    <!-- INSTAGRAM -->
+    <a class="contact-card" href="https://instagram.com/tkm.auto" target="_blank" rel="noopener">
+      <div class="card-icon" style="background:linear-gradient(135deg,rgba(131,58,180,0.2),rgba(253,29,29,0.2),rgba(252,176,69,0.2));border-color:rgba(224,22,10,0.3)">📸</div>
+      <div>
+        <div class="card-label">Instagram</div>
+        <div class="card-value">@tkm.auto</div>
+      </div>
+      <div class="card-sub">Suivez nos réalisations en live et envoyez-nous un DM pour un devis rapide.</div>
+      <div class="card-cta">Ouvrir Instagram</div>
+    </a>
+
+    <!-- LOCALISATION -->
+    <a class="contact-card full" href="https://maps.google.com/?q=Hersin-Coupigny+62530" target="_blank" rel="noopener">
+      <div class="card-icon">📍</div>
+      <div class="card-body">
+        <div class="card-label">Localisation · Sur rendez-vous uniquement</div>
+        <div class="card-value" style="font-size:1.3rem;margin-top:0.3rem">Hersin-Coupigny · 62530</div>
+        <div class="card-sub" style="margin-top:0.5rem">Pas-de-Calais · On intervient aussi dans le secteur de Béthune, Lens et Liévin</div>
+      </div>
+      <div class="card-cta">Voir sur la carte</div>
+    </a>
+
+  </div>
+
+  <!-- FORMULAIRE DEVIS -->
+  <div class="devis-panel reveal">
+    <div class="panel-title">📋 Formulaire de Devis</div>
+    <div class="form-grid">
+      <div class="form-field">
+        <label class="form-label">Votre prénom *</label>
+        <input type="text" class="form-input" id="fname" placeholder="Prénom" />
+      </div>
+      <div class="form-field">
+        <label class="form-label">Votre véhicule</label>
+        <input type="text" class="form-input" id="fcar" placeholder="Ex : Peugeot 308, BMW Série 3..." />
+      </div>
+      <div class="form-field full">
+        <label class="form-label">Prestation souhaitée *</label>
+        <select class="form-input" id="fservice">
+          <option value="">-- Choisir une prestation --</option>
+          <option>Covering automobile</option>
+          <option>Vitre teintée</option>
+          <option>Stickers personnalisés</option>
+          <option>Ciel étoilé</option>
+          <option>Bandeau pare-brise</option>
+          <option>Cache plaque personnalisé</option>
+          <option>Rénovation d'optiques</option>
+          <option>Plusieurs prestations / Pack</option>
+          <option>Autre</option>
+        </select>
+      </div>
+      <div class="form-field full">
+        <label class="form-label">Décrivez votre projet</label>
+        <textarea class="form-input" id="fmsg" placeholder="Couleurs souhaitées, dimensions, délai, budget approximatif..."></textarea>
+      </div>
+    </div>
+    <button class="btn-submit" onclick="sendDevis()">📩 Envoyer ma demande de devis</button>
+    <div class="success-msg" id="successMsg">✅ Votre demande a bien été envoyée ! On revient vers vous sous 24h.</div>
+  </div>
+
+  <!-- INFOS -->
+  <div class="info-strip reveal">
+    <div class="info-item">
+      <div class="info-icon">⏱</div>
+      <div class="info-title">Réponse</div>
+      <div class="info-value">Sous 24h</div>
+    </div>
+    <div class="info-item">
+      <div class="info-icon">💰</div>
+      <div class="info-title">Devis</div>
+      <div class="info-value">Gratuit</div>
+    </div>
+    <div class="info-item">
+      <div class="info-icon">📍</div>
+      <div class="info-title">Zone</div>
+      <div class="info-value">62 · Nord</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function sendDevis() {
+  const name    = document.getElementById('fname').value.trim();
+  const car     = document.getElementById('fcar').value.trim();
+  const service = document.getElementById('fservice').value;
+  const msg     = document.getElementById('fmsg').value.trim();
+
+  if (!name)    { alert('Veuillez entrer votre prénom.'); return; }
+  if (!service) { alert('Veuillez choisir une prestation.'); return; }
+
+  const subject = encodeURIComponent(`Demande de devis – ${service} – ${name}`);
+  const body = encodeURIComponent([
+    `Bonjour TKM,`,
+    ``,
+    `Je souhaite obtenir un devis pour la prestation suivante :`,
+    ``,
+    `- Prénom : ${name}`,
+    car     ? `- Véhicule : ${car}` : '',
+    `- Prestation : ${service}`,
+    msg     ? `- Détails : ${msg}` : '',
+    ``,
+    `Merci !`
+  ].filter(Boolean).join('\n'));
+
+  const a = document.createElement('a');
+  a.href = `mailto:contact@tkm-auto.fr?subject=${subject}&body=${body}`;
+  a.target = '_blank';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+
+  document.getElementById('successMsg').style.display = 'block';
+  setTimeout(() => document.getElementById('successMsg').style.display = 'none', 5000);
+}
+
+// Reveal
+const obs = new IntersectionObserver(entries => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      setTimeout(() => e.target.classList.add('visible'), i * 80);
+      obs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.08 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>

@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TKM – Grille Tarifaire</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --red: #E0160A;
+      --red-dark: #a50f07;
+      --red-glow: rgba(224,22,10,0.15);
+      --bg: #080808;
+      --bg2: #0f0f0f;
+      --bg3: #161616;
+      --bg4: #1c1c1c;
+      --white: #f0f0f0;
+      --grey: #666;
+      --grey2: #444;
+      --border: rgba(255,255,255,0.06);
+      --border2: rgba(255,255,255,0.1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Barlow', sans-serif;
+      background: var(--bg);
+      color: var(--white);
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.2rem 5%;
+      background: rgba(8,8,8,0.96);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .nav-logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: 0.1em; color: var(--white); text-decoration: none; }
+    .nav-logo span { color: var(--red); }
+    .nav-back { font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 0.82rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--grey); text-decoration: none; transition: color 0.2s; }
+    .nav-back:hover { color: var(--white); }
+
+    /* ── HERO ── */
+    .hero {
+      padding: 5rem 5% 3rem;
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+    }
+    .hero::before {
+      content: 'TARIFS';
+      position: absolute;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(8rem, 22vw, 18rem);
+      color: rgba(255,255,255,0.018);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      white-space: nowrap;
+      letter-spacing: 0.1em;
+      pointer-events: none;
+    }
+    .hero-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.7rem; font-weight: 700;
+      letter-spacing: 0.35em; text-transform: uppercase;
+      color: var(--red); margin-bottom: 1rem;
+    }
+    .hero-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3rem, 8vw, 6rem);
+      line-height: 0.92; letter-spacing: 0.03em;
+      margin-bottom: 1.2rem;
+    }
+    .hero-sub {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1rem; font-weight: 300;
+      letter-spacing: 0.08em; color: var(--grey);
+      max-width: 500px; margin: 0 auto 1.5rem;
+      line-height: 1.6;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.72rem; font-weight: 700;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--red);
+      border: 1px solid rgba(224,22,10,0.4);
+      padding: 0.4rem 1.2rem;
+      clip-path: polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);
+    }
+
+    /* ── MAIN GRID ── */
+    .pricing-wrap {
+      padding: 3rem 5% 6rem;
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    /* Section title */
+    .section-divider {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      margin: 3.5rem 0 2rem;
+    }
+    .section-divider:first-child { margin-top: 0; }
+    .divider-label {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 0.85rem;
+      letter-spacing: 0.3em;
+      color: var(--red);
+      white-space: nowrap;
+    }
+    .divider-line { flex: 1; height: 1px; background: var(--border2); }
+
+    /* ── SERVICE BLOCK ── */
+    .service-block {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      margin-bottom: 1.5px;
+      overflow: hidden;
+      transition: border-color 0.3s;
+    }
+    .service-block:hover { border-color: rgba(224,22,10,0.25); }
+
+    .service-header {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 1.5rem;
+      padding: 1.8rem 2rem;
+      cursor: pointer;
+      position: relative;
+    }
+    .service-header::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--red);
+      transform: scaleY(0);
+      transition: transform 0.3s;
+      transform-origin: bottom;
+    }
+    .service-block.open .service-header::before { transform: scaleY(1); }
+
+    .service-icon-wrap {
+      width: 52px; height: 52px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+      clip-path: polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);
+    }
+
+    .service-info { min-width: 0; }
+    .service-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.5rem;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.2rem;
+    }
+    .service-tagline {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.78rem; font-weight: 400;
+      letter-spacing: 0.06em; color: var(--grey);
+      text-transform: uppercase;
+    }
+
+    .service-price-preview {
+      text-align: right; flex-shrink: 0;
+    }
+    .price-from {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.65rem; font-weight: 700;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--grey); display: block;
+    }
+    .price-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem; line-height: 1;
+      color: var(--red);
+    }
+    .price-chevron {
+      font-size: 0.8rem; color: var(--grey);
+      margin-left: 0.8rem;
+      transition: transform 0.3s;
+      display: inline-block;
+    }
+    .service-block.open .price-chevron { transform: rotate(180deg); }
+
+    /* ── DETAIL PANEL ── */
+    .service-detail {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.45s cubic-bezier(.16,1,.3,1);
+    }
+    .service-block.open .service-detail { max-height: 800px; }
+
+    .detail-inner {
+      padding: 0 2rem 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .detail-desc {
+      font-size: 0.9rem;
+      color: var(--grey);
+      line-height: 1.7;
+      padding: 1.2rem 0 1.5rem;
+      max-width: 600px;
+    }
+
+    /* Prix table */
+    .price-table { width: 100%; border-collapse: collapse; }
+    .price-table th {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.68rem; font-weight: 700;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--grey2);
+      padding: 0.5rem 0.8rem;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+    .price-table th:last-child { text-align: right; }
+
+    .price-table td {
+      padding: 0.9rem 0.8rem;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+      vertical-align: middle;
+    }
+    .price-table tr:last-child td { border-bottom: none; }
+    .price-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+    .row-name {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 600; font-size: 0.95rem;
+      letter-spacing: 0.03em;
+    }
+    .row-detail { font-size: 0.8rem; color: var(--grey); margin-top: 0.15rem; }
+    .row-badge {
+      display: inline-block;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.58rem; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 0.15rem 0.5rem;
+      border-radius: 2px;
+      margin-left: 0.5rem;
+      vertical-align: middle;
+    }
+    .badge-pop  { background: rgba(224,22,10,0.15); color: var(--red); border: 1px solid rgba(224,22,10,0.3); }
+    .badge-best { background: rgba(255,215,0,0.1); color: #FFD700; border: 1px solid rgba(255,215,0,0.3); }
+    .badge-new  { background: rgba(0,200,100,0.1); color: #00c864; border: 1px solid rgba(0,200,100,0.3); }
+
+    .row-price {
+      text-align: right;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.4rem;
+      color: var(--white);
+      white-space: nowrap;
+    }
+    .row-price .euro { font-size: 0.9rem; color: var(--grey); }
+    .row-price .price-red { color: var(--red); }
+
+    /* Note bas */
+    .detail-note {
+      margin-top: 1.2rem;
+      padding: 0.8rem 1rem;
+      background: var(--bg3);
+      border-left: 2px solid var(--red);
+      font-size: 0.8rem;
+      color: var(--grey);
+      line-height: 1.6;
+    }
+    .detail-note strong { color: var(--white); }
+
+    /* ── CARTE CTA ── */
+    .cta-card {
+      margin-top: 3rem;
+      background: var(--red);
+      padding: 3rem 2.5rem;
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+    }
+    .cta-card::before {
+      content: 'TKM';
+      position: absolute;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 14rem;
+      color: rgba(0,0,0,0.12);
+      top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      pointer-events: none;
+      letter-spacing: 0.1em;
+    }
+    .cta-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      line-height: 1; letter-spacing: 0.03em;
+      margin-bottom: 0.8rem;
+      position: relative;
+    }
+    .cta-sub {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1rem; font-weight: 300;
+      letter-spacing: 0.1em;
+      opacity: 0.85; margin-bottom: 2rem;
+      position: relative;
+    }
+    .btn-white {
+      display: inline-block;
+      background: #fff; color: var(--red);
+      padding: 1rem 2.8rem;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700; font-size: 0.95rem;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      text-decoration: none;
+      clip-path: polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%);
+      transition: opacity 0.2s, transform 0.15s;
+      position: relative;
+    }
+    .btn-white:hover { opacity: 0.9; transform: translateY(-2px); }
+
+    /* ── MENTIONS ── */
+    .mentions {
+      text-align: center;
+      padding: 2rem 5%;
+      font-size: 0.78rem;
+      color: var(--grey2);
+      line-height: 1.7;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── REVEAL ── */
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s cubic-bezier(.16,1,.3,1), transform 0.7s cubic-bezier(.16,1,.3,1); }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    @media (max-width: 700px) {
+      .service-header { grid-template-columns: auto 1fr; gap: 1rem; padding: 1.2rem; }
+      .service-price-preview { display: none; }
+      .detail-inner { padding: 0 1.2rem 1.5rem; }
+      .price-table td, .price-table th { padding: 0.7rem 0.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">TK<span>M</span></a>
+  <a href="index.html" class="nav-back">← Retour au site</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero reveal">
+  <div class="hero-label">TKM Auto · Hersin-Coupigny 62530</div>
+  <h1 class="hero-title">Grille<br><span style="color:var(--red)">Tarifaire</span></h1>
+  <p class="hero-sub">Des tarifs transparents, accessibles et sans surprise. Cliquez sur chaque prestation pour voir le détail.</p>
+  <div class="hero-badge">⬡ Devis gratuit sur demande</div>
+</div>
+
+<div class="pricing-wrap">
+
+  <!-- ── COVERING ── -->
+  <div class="section-divider reveal">
+    <span class="divider-label">01 · Covering</span>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="service-block reveal" onclick="toggleBlock(this)">
+    <div class="service-header">
+      <div class="service-icon-wrap">🎨</div>
+      <div class="service-info">
+        <div class="service-name">Covering Automobile</div>
+        <div class="service-tagline">Partiel ou total · Vinyle premium · Sans toucher à la peinture</div>
+      </div>
+      <div class="service-price-preview">
+        <span class="price-from">À partir de</span>
+        <span class="price-num">80€ <span class="price-chevron">▼</span></span>
+      </div>
+    </div>
+    <div class="service-detail">
+      <div class="detail-inner">
+        <p class="detail-desc">Changez de couleur ou personnalisez votre carrosserie avec des films vinyle de haute qualité. Le covering protège votre peinture d'origine et se retire sans laisser de traces.</p>
+        <table class="price-table">
+          <tr><th>Prestation</th><th>Détail</th><th>Prix</th></tr>
+          <tr>
+            <td><div class="row-name">Covering capot</div><div class="row-detail">Film vinyle + pose</div></td>
+            <td></td>
+            <td class="row-price"><span class="price-red">80</span><span class="euro"> €</span></td>
+          </tr>
+          <tr>
+            <td><div class="row-name">Covering toit</div><div class="row-detail">Film vinyle + pose</div></td>
+            <td></td>
+            <td class="row-price"><span class="price-red">90</span><span class="euro"> €</span></td>
+          </tr>
+          <tr>
+            <td><div class="row-name">Covering rétroviseurs</div><div class="row-detail">La paire</div></td>
+            <td></td>
+            <td class="row-price"><span class="price-red">40</span><span class="euro"> €</span></td>
+          </tr>
+          <tr>
+            <td><div class="row-name">Covering partiel</div><div class="row-detail">Capot + toit + rétros</div></td>
+            <td><span class="row-badge badge-pop">Populaire</span></td>
+            <td class="row-price"><span class="price-red">190</span><span class="euro"> €</span></td>
+          </tr>
+          <tr>
+            <td><div class="row-name">Covering complet</div><div class="row-detail">Carrosserie intégrale · Devis sur mesure</div></td>
+            <td><span class="row-badge badge-best">Premium</span></td>
+            <td class="row-price"><span class="price-red">Sur devis</span></td>
+          </tr>
+        </table>
+        <div class="detail-note"><strong>Note :</strong> Tarifs indicatifs pour un véhicule de taille standard. Le prix peut varier selon la complexité du véhicule et le film choisi (mat, brillant, chrome, carbone...).</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── VITRE TEINTÉE ── -->
+  <div class="section-divider reveal">
+    <span class="divider-label">02 · Vitre Teintée</span>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="service-block reveal" onclick="toggleBlock(this)">
+    <div class="service-header">
+      <div class="service-icon-wrap">🌑</div>
+      <div class="service-info">
+        <div class="service-name">Vitre Teintée</div>
+        <div class="service-tagline">Films homologués · Protection UV · Confort thermique</div>
+      </div>
+      <div class="service-price-preview">
+        <span class="price-from">À partir de</span>
+        <span class="price-num">80€ <span class="price-chevron">▼</span></span>
+      </div>
+    </div>
+    <div class="service-detail">
+      <div class="detail-inner">
+        <p class="detail-desc">Pose de films teintés homologués sur vos vitres. Réduit la chaleur, protège des UV et apporte une finition esthétique soignée. Légal dans le respect de la réglementation française (70% VLT sur vitres avant).</p>
+        <table class="price-table">
+          <tr><th>Prestation</th><th>Détail</th><th>Prix</th></tr>
+          <tr>
+            <td><div class="row-name">2 vitres arrière</div><div class="row-detail">Latérales arrière uniquement</div></td>
+            <td></td>
+            <td class="row-price"><span class="price-red">80</span><span class="euro"> €</span></td>
+          </tr>
+          <tr>
+            <td><div class="row-name">Lunette arrière</div><div class="row-detail">Vitre de coffre</div></td>
+            <td></td>
+            <td class="row-price"><span class="price-red">60</span><span class="euro"> €</span></td>
+          </tr>
+          <tr>
+            <td><div class="row-name">Pack arrière complet</div><div class="row-detail">2 latérales + lunette</div></td>
+            <td><span class="row-badge badge-pop">Populaire</span></td>
+            <td class="row-price"><span class="price-red">120</span><span class="euro"> €</span></td>
+          </tr>
+          <tr>
+            <td><div class="row-name">Pack intégral</div><div class="row-detail">Toutes vitres (hors pare-brise)</div></td>
+            <td><span class="row-badge badge-best">Complet</span></td>
+            <td class="row-price"><span class="price-red">180</span><span class="euro"> €</span></td>
+          </tr>
+        </table>
+        <div class="detail-note"><strong>Réglementation :</strong> Les vitres latérales avant doivent laisser passer au minimum 70% de la lumière. Les vitres arrière sont sans restriction. Nous respectons la loi en vigueur.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── STICKERS ── -->
+  <div class="section-divider reveal">
+    <span class="divider-label">03 · Stickers Personnalisés</span>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="service-block reveal" onclick="toggleBlock(this)">
+    <div class="service-header">
+      <div class="service-icon-wrap">🎯</div>
+      <div class="service-info">
+        <div class="service-name">Stickers Personnalisés</div>
+        <div class="service-tagline">Découpe plotter · Insta · TikTok · Logo custom</div>
+      </div>
+      <div class="service-price-preview">
+        <span class="price-from">À partir de</span>
+        <span class="price-num">5€ <span class="price-chevron">▼</span></span>
+      </div>
+    </div>
+    <div class="service-detail">
+      <div class="detail-inner">
+        <p class="detail-desc">Stickers découpés au plotter de précision. Pseudo Instagram, TikTok, Snapchat, logo personnel ou design entièrement sur mesure. Vinyle extérieur résistant aux intempéries.</p>
+        <table class="price-table">
+          <tr><th>Prestation</th><th>Détail</th><th>Prix</th></tr>
+          <tr>
+            <td><div class="row-name">Sticker réseau social</div><div class="row-detail">Pseudo + logo · jusqu'à 15 cm</div></td>
+            <td><span class="row-badge badge-pop">Tendance</span></td>
+            <td class="row-price"><span class="price-red">5</span><span class="euro"> €</span></td>
+          </tr>
+          <tr>
+            <td><div class="row-name">Sticker réseau social</div><div class="row-detail">Pseudo + logo · 15 à 30 cm</div></td>
+            <td></td>
+            <td class="row-price"><span class="price-red">8</span><span class="euro"> €</span></td>
+          </tr>
+          <tr>
+            <td><div class="row-name">Sticker design custom</div><div class="row-detail">Logo ou motif · tarif à la surface</div></td>
+            <td></td>
+            <td class="row-price"><span class="price-red">10</span><span class="euro"> €+</span></td>
+          </tr>
+          <tr>
+            <td><div class="row-name">Pack 5 stickers</div><div class="row-detail">Même design · même taille</div></td>
+            <td><span class="row-badge badge-best">Économique</span></td>
+            <td class="row-price"><span class="price-red">-20%</span></td>
+          </tr>
+        </table>
+        <div class="detail-note"><strong>Astuce :</strong> Utilisez notre configurateur en ligne pour visualiser votre sticker réseau social et nous envoyer directement le fichier prêt à découper.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CIEL ÉTOILÉ ── -->
+  <div class="section-divider reveal">
+    <span class="divider-label">04 · Ciel Étoilé</span>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="service-block reveal" onclick="toggleBlock(this)">
+    <div class="service-header">
+      <div class="service-icon-wrap">✨</div>
+      <div class="service-info">
+        <div class="service-name">Ciel Étoilé</div>
+        <div class="service-tagline">Fibre optique · Scintillement · Ambiance prestige</div>
+      </div>
+      <div class="service-price-preview">
+        <span class="price-from">À partir de</span>
+        <span class="price-num">350€ <span class="price-chevron">▼</span></span>
+      </div>
+    </div>
+    <div class="service-detail">
+      <div class="detail-inner">
+        <p class="detail-desc">Transformation de votre plafond en voûte étoilée avec des fibres optiques. Chaque fibre est posée à la main dans le tissu de votre habitacle pour un rendu somptueux.</p>
+        <table class="price-table">
+          <tr><th>Formule</th><th>Fibres</th><th>Prix</th></tr>
+          <tr>
+            <td><div class="row-name">Essentiel</div><div class="row-detail">Ciel étoilé simple et élégant</div></td>
+            <td style="color:var(--grey);font-family:'Barlow Condensed',sans-serif;letter-spacing:0.05em">250 fibres</td>
+            <td class="row-price"><span class="price-red">350</span><span class="euro"> €</span></td>
+          </tr>
+          <tr>
+            <td><div class="row-name">Confort</div><div class="row-detail">Densité idéale pour la plupart des véhicules</div></td>
+            <td style="color:var(--grey);font-family:'Barlow Condensed',sans-serif;letter-spacing:0.05em">500 fibres</td>
+            <td class="row-price"><span class="price-red">500</span><span class="euro"> €</span></td>
+          </tr>
+          <tr>
+            <td><div class="row-name">Premium</div><div class="row-detail">Rendu spectaculaire haute densité</div></td>
+            <td style="color:var(--grey);font-family:'Barlow Condensed',sans-serif;letter-spacing:0.05em">800 fibres</td>
+            <td class="row-price"><span class="price-red">700</span><span class="euro"> €</span></td>
+          </tr>
+          <tr>
+            <td><div class="row-name">Prestige</div><div class="row-detail">Expérience Rolls-Royce · Scintillement inclus</div></td>
+            <td style="color:var(--grey);font-family:'Barlow Condensed',sans-serif;letter-spacing:0.05em">1000 fibres</td>
+            <td class="row-price"><span class="price-red">900</span><span class="euro"> €</span></td>
+          </tr>
+          <tr>
+            <td><div class="row-name">Option étoiles filantes</div><div class="row-detail">Ajout de l'effet météore</div></td>
+            <td></td>
+            <td class="row-price"><span class="price-red">+50</span><span class="euro"> €</span></td>
+          </tr>
+        </table>
+        <div class="detail-note"><strong>Inclus :</strong> Démontage et remontage du plafond, pose des fibres, boîtier LED. Tarifs pour un plafond de taille standard (citadine/berline). SUV et monospace : supplément selon la surface.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── BANDEAU PARE-BRISE ── -->
+  <div class="section-divider reveal">
+    <span class="divider-label">05 · Bandeau Pare-Brise</span>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="service-block reveal" onclick="toggleBlock(this)">
+    <div class="service-header">
+      <div class="service-icon-wrap">🚗</div>
+      <div class="service-info">
+        <div class="service-name">Bandeau Pare-Brise</div>
+        <div class="service-tagline">Sur mesure · Texte ou design · Découpe plotter</div>
+      </div>
+      <div class="service-price-preview">
+        <span class="price-from">À partir de</span>
+        <span class="price-num">30€ <span class="price-chevron">▼</span></span>
+      </div>
+    </div>
+    <div class="service-detail">
+      <div class="detail-inner">
+        <p class="detail-desc">Bandeaux décoratifs personnalisés pour votre pare-brise. Texte, pseudo, logo ou motif découpé au plotter avec précision. Vinyle résistant aux UV et aux intempéries.</p>
+        <table class="price-table">
+          <tr><th>Prestation</th><th>Détail</th><th>Prix</th></tr>
+          <tr>
+            <td><div class="row-name">Bandeau texte simple</div><div class="row-detail">Prénom, pseudo, slogan · 1 couleur</div></td>
+            <td><span class="row-badge badge-pop">Populaire</span></td>
+            <td class="row-price"><span class="price-red">30</span><span class="euro"> €</span></td>
+          </tr>
+          <tr>
+            <td><div class="row-name">Bandeau bicolore</div><div class="row-detail">Texte + liseré de couleur</div></td>
+            <td></td>
+            <td class="row-price"><span class="price-red">40</span><span class="euro"> €</span></td>
+          </tr>
+          <tr>
+            <td><div class="row-name">Bandeau design custom</div><div class="row-detail">Logo, motif, plusieurs éléments</div></td>
+            <td></td>
+            <td class="row-price"><span class="price-red">50</span><span class="euro"> €</span></td>
+          </tr>
+          <tr>
+            <td><div class="row-name">Bandeau + pose incluse</div><div class="row-detail">On vient poser chez vous sur RDV</div></td>
+            <td></td>
+            <td class="row-price"><span class="price-red">+10</span><span class="euro"> €</span></td>
+          </tr>
+        </table>
+        <div class="detail-note"><strong>Note :</strong> Le bandeau est fourni prêt à poser. La pose peut être effectuée par vos soins (livré avec instructions) ou par nos soins sur rendez-vous moyennant un supplément.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CACHE PLAQUE ── -->
+  <div class="section-divider reveal">
+    <span class="divider-label">06 · Cache Plaque</span>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="service-block reveal" onclick="toggleBlock(this)">
+    <div class="service-header">
+      <div class="service-icon-wrap">🔲</div>
+      <div class="service-info">
+        <div class="service-name">Cache Plaque Personnalisé</div>
+        <div class="service-tagline">Format standard FR · Design sur mesure · Configurateur en ligne</div>
+      </div>
+      <div class="service-price-preview">
+        <span class="price-from">À partir de</span>
+        <span class="price-num">20€ <span class="price-chevron">▼</span></span>
+      </div>
+    </div>
+    <div class="service-detail">
+      <div class="detail-inner">
+        <p class="detail-desc">Cadres de plaque entièrement personnalisables : couleur de fond, logos réseaux sociaux, texte au choix. Utilisez notre configurateur en ligne pour créer votre design avant de commander.</p>
+        <table class="price-table">
+          <tr><th>Prestation</th><th>Détail</th><th>Prix</th></tr>
+          <tr>
+            <td><div class="row-name">Cache plaque simple</div><div class="row-detail">1 couleur · texte basique</div></td>
+            <td></td>
+            <td class="row-price"><span class="price-red">20</span><span class="euro"> €</span></td>
+          </tr>
+          <tr>
+            <td><div class="row-name">Cache plaque custom</div><div class="row-detail">Logo réseau social + texte</div></td>
+            <td><span class="row-badge badge-pop">Populaire</span></td>
+            <td class="row-price"><span class="price-red">30</span><span class="euro"> €</span></td>
+          </tr>
+          <tr>
+            <td><div class="row-name">Cache plaque prestige</div><div class="row-detail">Design full custom · fond image</div></td>
+            <td><span class="row-badge badge-best">Premium</span></td>
+            <td class="row-price"><span class="price-red">45</span><span class="euro"> €</span></td>
+          </tr>
+          <tr>
+            <td><div class="row-name">Pack avant + arrière</div><div class="row-detail">Les 2 plaques · même design</div></td>
+            <td></td>
+            <td class="row-price"><span class="price-red">-10%</span></td>
+          </tr>
+        </table>
+        <div class="detail-note"><strong>Astuce :</strong> Utilisez notre configurateur en ligne pour créer votre design, téléchargez le rendu et envoyez-le nous directement. Gain de temps garanti !</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RÉNOVATION OPTIQUES ── -->
+  <div class="section-divider reveal">
+    <span class="divider-label">07 · Rénovation d'Optiques</span>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="service-block reveal" onclick="toggleBlock(this)">
+    <div class="service-header">
+      <div class="service-icon-wrap">💡</div>
+      <div class="service-info">
+        <div class="service-name">Rénovation d'Optiques</div>
+        <div class="service-tagline">Traitement 4H ou 5H · Phares comme neufs · Protection longue durée</div>
+      </div>
+      <div class="service-price-preview">
+        <span class="price-from">À partir de</span>
+        <span class="price-num">40€ <span class="price-chevron">▼</span></span>
+      </div>
+    </div>
+    <div class="service-detail">
+      <div class="detail-inner">
+        <p class="detail-desc">Vos phares sont ternis, jaunis ou oxydés ? Nous les rénovons avec des produits professionnels pour retrouver une transparence optimale et améliorer votre éclairage routier.</p>
+        <table class="price-table">
+          <tr><th>Traitement</th><th>Protection</th><th>Prix</th></tr>
+          <tr>
+            <td>
+              <div class="row-name">Traitement 4H <span class="row-badge badge-pop">Entrée de gamme</span></div>
+              <div class="row-detail">Polissage + vernis 4H · la paire de phares</div>
+            </td>
+            <td style="color:var(--grey);font-family:'Barlow Condensed',sans-serif;letter-spacing:0.05em;font-size:0.9rem">6 à 12 mois</td>
+            <td class="row-price"><span class="price-red">40</span><span class="euro"> €</span></td>
+          </tr>
+          <tr>
+            <td>
+              <div class="row-name">Traitement 5H <span class="row-badge badge-best">Recommandé</span></div>
+              <div class="row-detail">Polissage + vernis 5H · la paire de phares</div>
+            </td>
+            <td style="color:var(--grey);font-family:'Barlow Condensed',sans-serif;letter-spacing:0.05em;font-size:0.9rem">Jusqu'à 2 ans</td>
+            <td class="row-price"><span class="price-red">65</span><span class="euro"> €</span></td>
+          </tr>
+          <tr>
+            <td>
+              <div class="row-name">Feux arrière</div>
+              <div class="row-detail">Polissage + protection · la paire</div>
+            </td>
+            <td style="color:var(--grey);font-family:'Barlow Condensed',sans-serif;letter-spacing:0.05em;font-size:0.9rem">6 à 12 mois</td>
+            <td class="row-price"><span class="price-red">35</span><span class="euro"> €</span></td>
+          </tr>
+        </table>
+        <div class="detail-note"><strong>Notre conseil :</strong> Le traitement 5H est largement recommandé. Pour 25€ de plus, vous bénéficiez d'une protection 2x plus durable qui résiste bien mieux aux UV et intempéries du Nord de la France.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── FINITIONS ── -->
+  <div class="section-divider reveal">
+    <span class="divider-label">08 · Finitions Sur Mesure</span>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="service-block reveal" onclick="toggleBlock(this)">
+    <div class="service-header">
+      <div class="service-icon-wrap">⭐</div>
+      <div class="service-info">
+        <div class="service-name">Finitions Sur Mesure</div>
+        <div class="service-tagline">Projet unique · Combinaison de services · Tarif personnalisé</div>
+      </div>
+      <div class="service-price-preview">
+        <span class="price-from"></span>
+        <span class="price-num" style="font-size:1.2rem">Devis <span class="price-chevron">▼</span></span>
+      </div>
+    </div>
+    <div class="service-detail">
+      <div class="detail-inner">
+        <p class="detail-desc">Vous avez un projet spécifique ou vous souhaitez combiner plusieurs prestations ? Nous étudions chaque projet individuellement pour vous proposer une solution et un tarif adaptés.</p>
+        <table class="price-table">
+          <tr><th>Pack</th><th>Inclus</th><th>Prix</th></tr>
+          <tr>
+            <td><div class="row-name">Pack Style</div><div class="row-detail">Pour une personnalisation complète</div></td>
+            <td style="color:var(--grey);font-size:0.8rem">Covering toit + bandeau + sticker</td>
+            <td class="row-price"><span class="price-red">150</span><span class="euro"> €</span></td>
+          </tr>
+          <tr>
+            <td><div class="row-name">Pack Confort</div><div class="row-detail">Pour un habitacle premium</div></td>
+            <td style="color:var(--grey);font-size:0.8rem">Vitres teintées + ciel étoilé 250</td>
+            <td class="row-price"><span class="price-red">450</span><span class="euro"> €</span></td>
+          </tr>
+          <tr>
+            <td><div class="row-name">Pack Full Custom</div><div class="row-detail">La totale · votre voiture transformée</div></td>
+            <td style="color:var(--grey);font-size:0.8rem">Covering + vitres + ciel + stickers</td>
+            <td class="row-price"><span class="price-red">Sur devis</span></td>
+          </tr>
+        </table>
+        <div class="detail-note"><strong>Bon à savoir :</strong> Plus vous combinez de prestations, plus vous bénéficiez de remises. Contactez-nous pour un devis personnalisé gratuit.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-card reveal" style="margin-top:3rem">
+    <div class="cta-title">Un projet en tête ?</div>
+    <p class="cta-sub">Devis gratuit · Réponse rapide · Hersin-Coupigny 62530</p>
+    <a href="contact.html" class="btn-white">📩 Demander un devis gratuit</a>
+  </div>
+
+</div>
+
+<!-- MENTIONS -->
+<div class="mentions">
+  Tarifs indicatifs TTC valables pour un véhicule de taille standard · Susceptibles de varier selon la complexité du projet<br>
+  Pour tout projet spécifique, un devis personnalisé gratuit vous sera fourni sur simple demande · <strong>TKM Auto</strong> · Hersin-Coupigny 62530
+</div>
+
+<script>
+function toggleBlock(block) {
+  const isOpen = block.classList.contains('open');
+  document.querySelectorAll('.service-block').forEach(b => b.classList.remove('open'));
+  if (!isOpen) block.classList.add('open');
+}
+
+// Reveal on scroll
+const revealEls = document.querySelectorAll('.reveal');
+const obs = new IntersectionObserver(entries => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      setTimeout(() => e.target.classList.add('visible'), i * 60);
+      obs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.08 });
+revealEls.forEach(el => obs.observe(el));
+</script>
+</body>
+</html>
