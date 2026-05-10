@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TKM – Créateur de Planches Stickers</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --red:#E0160A; --red-dark:#a50f07;
+      --bg:#0a0a0a; --bg2:#111; --bg3:#1a1a1a; --bg4:#222;
+      --white:#f0f0f0; --grey:#666; --grey2:#444;
+      --border:rgba(255,255,255,0.07);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html{scroll-behavior:smooth;}
+    body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--white);min-height:100vh;overflow-x:hidden;}
+
+    /* NAV */
+    nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 2%;background:rgba(10,10,10,0.97);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200;}
+    .nav-logo{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:0.1em;color:var(--white);text-decoration:none;}
+    .nav-logo span{color:var(--red);}
+    .nav-title{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:0.15em;color:var(--grey);text-transform:uppercase;}
+    .nav-back{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:0.8rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--grey);text-decoration:none;transition:color 0.2s;}
+    .nav-back:hover{color:var(--white);}
+
+    /* LAYOUT */
+    .app{display:grid;grid-template-columns:260px 1fr 240px;height:calc(100vh - 57px);overflow:hidden;}
+
+    /* ── SIDEBAR GAUCHE ── */
+    .sidebar-left{background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;}
+    .sidebar-right{background:var(--bg2);border-left:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;}
+
+    .panel-section{padding:1rem;border-bottom:1px solid var(--border);}
+    .panel-section:last-child{border-bottom:none;}
+    .panel-head{font-family:'Bebas Neue',sans-serif;font-size:0.9rem;letter-spacing:0.15em;color:var(--grey);margin-bottom:0.8rem;display:flex;align-items:center;gap:0.5rem;}
+    .panel-head::after{content:'';flex:1;height:1px;background:var(--border);}
+
+    /* Upload zone */
+    .upload-zone{border:2px dashed var(--border);padding:1.5rem 1rem;text-align:center;cursor:pointer;transition:all 0.2s;position:relative;}
+    .upload-zone:hover,.upload-zone.drag{border-color:var(--red);background:rgba(224,22,10,0.05);}
+    .upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+    .upload-icon{font-size:1.8rem;margin-bottom:0.5rem;}
+    .upload-text{font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--grey);}
+    .upload-sub{font-size:0.7rem;color:var(--grey2);margin-top:0.3rem;}
+
+    /* Image library */
+    .img-library{display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;margin-top:0.6rem;}
+    .lib-item{aspect-ratio:1;background:var(--bg3);border:1px solid var(--border);cursor:pointer;position:relative;overflow:hidden;transition:border-color 0.2s;}
+    .lib-item:hover{border-color:var(--red);}
+    .lib-item img{width:100%;height:100%;object-fit:contain;padding:4px;}
+    .lib-del{position:absolute;top:2px;right:2px;background:rgba(224,22,10,0.8);border:none;color:#fff;font-size:0.65rem;padding:2px 4px;cursor:pointer;display:none;}
+    .lib-item:hover .lib-del{display:block;}
+    .lib-add-hint{font-size:0.65rem;text-align:center;color:var(--grey2);font-style:italic;}
+
+    /* Format planche */
+    .format-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;}
+    .fmt-btn{background:var(--bg3);border:2px solid var(--border);color:var(--white);padding:0.5rem 0.3rem;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;letter-spacing:0.05em;text-align:center;text-transform:uppercase;transition:all 0.2s;clip-path:polygon(5px 0%,100% 0%,calc(100% - 5px) 100%,0% 100%);}
+    .fmt-btn:hover{border-color:rgba(255,255,255,0.2);}
+    .fmt-btn.active{border-color:var(--red);background:rgba(224,22,10,0.1);color:var(--red);}
+    .fmt-sub{font-size:0.6rem;color:var(--grey);display:block;font-weight:400;}
+
+    /* Custom size */
+    .size-inputs{display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;margin-top:0.5rem;}
+    .size-input{background:var(--bg3);border:1px solid var(--border);color:var(--white);font-family:'Barlow',sans-serif;font-size:0.85rem;padding:0.45rem 0.6rem;outline:none;text-align:center;width:100%;}
+    .size-input:focus{border-color:var(--red);}
+
+    /* Fond planche */
+    .bg-options{display:flex;gap:0.4rem;flex-wrap:wrap;}
+    .bg-opt{width:28px;height:28px;border:2px solid transparent;cursor:pointer;clip-path:polygon(3px 0%,100% 0%,calc(100% - 3px) 100%,0% 100%);transition:border-color 0.15s,transform 0.15s;}
+    .bg-opt:hover,.bg-opt.active{border-color:var(--white);transform:scale(1.1);}
+
+    /* Form label */
+    .f-label{font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--grey);margin-bottom:0.3rem;display:block;}
+
+    /* Boutons */
+    .btn-sm{background:var(--bg3);border:1px solid var(--border);color:var(--white);padding:0.45rem 0.8rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;transition:all 0.2s;clip-path:polygon(5px 0%,100% 0%,calc(100% - 5px) 100%,0% 100%);}
+    .btn-sm:hover{border-color:var(--grey);}
+    .btn-red-sm{background:var(--red);border-color:var(--red);color:#fff;}
+    .btn-red-sm:hover{background:var(--red-dark);}
+    .btn-full{width:100%;display:block;margin-bottom:0.4rem;}
+
+    /* ── CANVAS AREA ── */
+    .canvas-area{background:#1a1a1a;display:flex;align-items:center;justify-content:center;overflow:auto;position:relative;}
+
+    /* Grille fond */
+    .canvas-area::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);background-size:20px 20px;pointer-events:none;}
+
+    #sheetCanvas{position:relative;z-index:1;box-shadow:0 0 60px rgba(0,0,0,0.8),0 0 0 1px rgba(255,255,255,0.1);cursor:crosshair;}
+    #sheetCanvas.moving{cursor:move;}
+
+    /* ── SIDEBAR DROITE ── */
+    .prop-empty{padding:1.5rem 1rem;text-align:center;font-size:0.8rem;color:var(--grey);font-style:italic;line-height:1.6;}
+
+    .prop-field{margin-bottom:0.8rem;}
+    .prop-input{background:var(--bg3);border:1px solid var(--border);color:var(--white);font-family:'Barlow',sans-serif;font-size:0.85rem;padding:0.45rem 0.7rem;outline:none;width:100%;transition:border-color 0.2s;}
+    .prop-input:focus{border-color:var(--red);}
+    .prop-row{display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;}
+    .prop-btn-row{display:flex;gap:0.4rem;}
+    .prop-btn{flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--white);padding:0.45rem;font-size:0.8rem;cursor:pointer;transition:all 0.2s;text-align:center;}
+    .prop-btn:hover{border-color:var(--grey);}
+    .prop-btn.active{border-color:var(--red);color:var(--red);}
+
+    /* Slider */
+    .sl{width:100%;-webkit-appearance:none;height:3px;background:var(--border);outline:none;margin-bottom:0.3rem;}
+    .sl::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;background:var(--red);cursor:pointer;clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);}
+
+    /* Couches list */
+    .layers-list{display:flex;flex-direction:column;gap:0.3rem;max-height:200px;overflow-y:auto;}
+    .layer-item{background:var(--bg3);border:1px solid var(--border);padding:0.5rem 0.7rem;display:flex;align-items:center;gap:0.5rem;cursor:pointer;font-size:0.8rem;transition:border-color 0.2s;}
+    .layer-item:hover,.layer-item.selected{border-color:var(--red);}
+    .layer-thumb{width:28px;height:28px;object-fit:contain;background:var(--bg4);border:1px solid var(--border);}
+    .layer-name{flex:1;font-family:'Barlow Condensed',sans-serif;font-size:0.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .layer-btns{display:flex;gap:0.2rem;}
+    .layer-btn{background:none;border:none;color:var(--grey);font-size:0.75rem;cursor:pointer;padding:2px 4px;transition:color 0.2s;}
+    .layer-btn:hover{color:var(--white);}
+    .layer-btn.del:hover{color:var(--red);}
+
+    /* Prix / Export */
+    .price-display{text-align:center;padding:0.8rem;background:var(--bg3);border:1px solid var(--border);margin-bottom:0.6rem;}
+    .price-big{font-family:'Bebas Neue',sans-serif;font-size:2.5rem;color:var(--red);line-height:1;}
+    .price-sub{font-size:0.72rem;color:var(--grey);font-family:'Barlow Condensed',sans-serif;letter-spacing:0.1em;text-transform:uppercase;}
+
+    /* Toolbar canvas */
+    .canvas-toolbar{position:absolute;top:12px;left:50%;transform:translateX(-50%);display:flex;gap:0.4rem;z-index:10;background:rgba(10,10,10,0.85);padding:0.4rem;border:1px solid var(--border);backdrop-filter:blur(8px);}
+    .tool-btn{background:transparent;border:1px solid transparent;color:var(--grey);padding:0.35rem 0.7rem;font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;transition:all 0.2s;clip-path:polygon(5px 0%,100% 0%,calc(100% - 5px) 100%,0% 100%);}
+    .tool-btn:hover{color:var(--white);}
+    .tool-btn.active{background:var(--red);border-color:var(--red);color:#fff;}
+    .tool-sep{width:1px;background:var(--border);margin:0 0.2rem;}
+
+    /* Zoom display */
+    .zoom-info{position:absolute;bottom:12px;right:12px;font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--grey2);background:rgba(10,10,10,0.7);padding:0.3rem 0.6rem;z-index:5;}
+
+    @media(max-width:1100px){.app{grid-template-columns:220px 1fr 200px;}}
+    @media(max-width:800px){.sidebar-right{display:none;}.app{grid-template-columns:200px 1fr;}}
+    @media(max-width:600px){.sidebar-left{display:none;}.app{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">TK<span>M</span></a>
+  <span class="nav-title">Créateur de Planches Stickers</span>
+  <a href="index.html" class="nav-back">← Retour</a>
+</nav>
+
+<div class="app">
+
+  <!-- ── SIDEBAR GAUCHE ── -->
+  <div class="sidebar-left">
+
+    <!-- IMPORT IMAGES -->
+    <div class="panel-section">
+      <div class="panel-head">Images</div>
+      <div class="upload-zone" id="uploadZone">
+        <input type="file" id="fileInput" accept="image/*" multiple />
+        <div class="upload-icon">📁</div>
+        <div class="upload-text">Importer des images</div>
+        <div class="upload-sub">PNG · SVG · JPG · Glisser-déposer</div>
+      </div>
+      <div class="img-library" id="imgLibrary">
+        <div class="lib-add-hint" style="grid-column:1/-1;margin-top:0.4rem">Vos images apparaîtront ici</div>
+      </div>
+    </div>
+
+    <!-- FORMAT PLANCHE -->
+    <div class="panel-section">
+      <div class="panel-head">Format Planche</div>
+      <div class="format-grid">
+        <button class="fmt-btn" data-w="210" data-h="297" onclick="setFormat(this)">A4<span class="fmt-sub">210×297 mm</span></button>
+        <button class="fmt-btn" data-w="297" data-h="420" onclick="setFormat(this)">A3<span class="fmt-sub">297×420 mm</span></button>
+        <button class="fmt-btn active" data-w="200" data-h="200" onclick="setFormat(this)">Carré<span class="fmt-sub">200×200 mm</span></button>
+        <button class="fmt-btn" data-w="100" data-h="150" onclick="setFormat(this)">Carte<span class="fmt-sub">100×150 mm</span></button>
+      </div>
+      <div style="margin-top:0.6rem">
+        <label class="f-label">Personnalisé (mm)</label>
+        <div class="size-inputs">
+          <input type="number" class="size-input" id="customW" placeholder="L" value="200" min="50" max="600" oninput="setCustomFormat()" />
+          <input type="number" class="size-input" id="customH" placeholder="H" value="200" min="50" max="600" oninput="setCustomFormat()" />
+        </div>
+      </div>
+    </div>
+
+    <!-- FOND PLANCHE -->
+    <div class="panel-section">
+      <div class="panel-head">Fond</div>
+      <div class="bg-options">
+        <div class="bg-opt active" style="background:#fff" data-bg="#ffffff" onclick="setBg(this)"></div>
+        <div class="bg-opt" style="background:#f5f5f5" data-bg="#f5f5f5" onclick="setBg(this)"></div>
+        <div class="bg-opt" style="background:#000;border:1px solid #333" data-bg="#000000" onclick="setBg(this)"></div>
+        <div class="bg-opt" style="background:#111" data-bg="#111111" onclick="setBg(this)"></div>
+        <div class="bg-opt" style="background:#0a0a20" data-bg="#0a0a20" onclick="setBg(this)"></div>
+        <div class="bg-opt" style="background:transparent;border:1px dashed #555" data-bg="transparent" onclick="setBg(this)" title="Transparent"></div>
+        <div style="position:relative;width:28px;height:28px;overflow:hidden;clip-path:polygon(3px 0%,100% 0%,calc(100% - 3px) 100%,0% 100%);">
+          <div style="width:100%;height:100%;background:conic-gradient(red,yellow,lime,cyan,blue,magenta,red);"></div>
+          <input type="color" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;" oninput="setCustomBg(this.value)" />
+        </div>
+      </div>
+    </div>
+
+    <!-- AJOUTER TEXTE -->
+    <div class="panel-section">
+      <div class="panel-head">Texte</div>
+      <input type="text" class="size-input" id="textInput" placeholder="Votre texte..." style="width:100%;margin-bottom:0.5rem" />
+      <div style="display:flex;gap:0.4rem">
+        <select class="size-input" id="textFont" style="flex:1">
+          <option value="Bebas Neue">Bebas Neue</option>
+          <option value="Barlow Condensed">Barlow Condensed</option>
+          <option value="Montserrat">Montserrat</option>
+          <option value="Arial Black">Arial Black</option>
+          <option value="Impact">Impact</option>
+        </select>
+        <input type="color" id="textColor" value="#000000" style="width:36px;height:36px;border:1px solid var(--border);background:none;cursor:pointer;" />
+      </div>
+      <button class="btn-sm btn-full" style="margin-top:0.5rem" onclick="addText()">+ Ajouter le texte</button>
+    </div>
+
+    <!-- FORMES -->
+    <div class="panel-section">
+      <div class="panel-head">Formes</div>
+      <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+        <button class="btn-sm" onclick="addShape('rect')">▬ Rect</button>
+        <button class="btn-sm" onclick="addShape('circle')">● Cercle</button>
+        <button class="btn-sm" onclick="addShape('star')">★ Étoile</button>
+        <button class="btn-sm" onclick="addShape('heart')">♥ Cœur</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.5rem;margin-top:0.5rem;">
+        <label class="f-label" style="margin:0">Couleur</label>
+        <input type="color" id="shapeColor" value="#E0160A" style="width:36px;height:28px;border:1px solid var(--border);background:none;cursor:pointer;" />
+      </div>
+    </div>
+
+    <!-- GRILLE AUTO -->
+    <div class="panel-section">
+      <div class="panel-head">Remplissage Auto</div>
+      <label class="f-label">Répéter l'élément sélectionné</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;margin-bottom:0.5rem;">
+        <div><label class="f-label">Colonnes</label><input type="number" class="size-input" id="gridCols" value="3" min="1" max="10"/></div>
+        <div><label class="f-label">Lignes</label><input type="number" class="size-input" id="gridRows" value="3" min="1" max="10"/></div>
+      </div>
+      <button class="btn-sm btn-full" onclick="autoGrid()">⊞ Remplir en grille</button>
+    </div>
+
+  </div>
+
+  <!-- ── CANVAS ZONE ── -->
+  <div class="canvas-area" id="canvasArea">
+    <div class="canvas-toolbar">
+      <button class="tool-btn active" id="toolSelect" onclick="setTool('select',this)">↖ Sélection</button>
+      <div class="tool-sep"></div>
+      <button class="tool-btn" onclick="duplicateSelected()">⧉ Dupliquer</button>
+      <button class="tool-btn" onclick="deleteSelected()">✕ Supprimer</button>
+      <div class="tool-sep"></div>
+      <button class="tool-btn" onclick="alignItems('left')">⬤← Gauche</button>
+      <button class="tool-btn" onclick="alignItems('center')">↔ Centre</button>
+      <button class="tool-btn" onclick="alignItems('right')">→⬤ Droite</button>
+      <div class="tool-sep"></div>
+      <button class="tool-btn" onclick="undo()">↩ Annuler</button>
+      <button class="tool-btn" onclick="clearSheet()">🗑 Vider</button>
+    </div>
+    <canvas id="sheetCanvas"></canvas>
+    <div class="zoom-info" id="zoomInfo">Zoom 100%</div>
+  </div>
+
+  <!-- ── SIDEBAR DROITE ── -->
+  <div class="sidebar-right">
+
+    <!-- PROPRIÉTÉS -->
+    <div class="panel-section">
+      <div class="panel-head">Propriétés</div>
+      <div id="propPanel">
+        <div class="prop-empty">Sélectionnez un élément<br>pour modifier ses propriétés</div>
+      </div>
+    </div>
+
+    <!-- COUCHES -->
+    <div class="panel-section">
+      <div class="panel-head">Couches</div>
+      <div class="layers-list" id="layersList">
+        <div style="text-align:center;font-size:0.75rem;color:var(--grey2);padding:0.5rem;">Aucun élément</div>
+      </div>
+    </div>
+
+    <!-- INFOS -->
+    <div class="panel-section">
+      <div class="panel-head">Infos Planche</div>
+      <div style="font-size:0.8rem;color:var(--grey);line-height:1.7;">
+        <div>Format : <span id="infoFormat" style="color:var(--white)">200×200 mm</span></div>
+        <div>Éléments : <span id="infoCount" style="color:var(--white)">0</span></div>
+        <div>Résolution export : <span style="color:var(--white)">300 DPI</span></div>
+      </div>
+    </div>
+
+    <!-- PRIX & EXPORT -->
+    <div class="panel-section">
+      <div class="panel-head">Prix & Export</div>
+      <label class="f-label">Prix de vente</label>
+      <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.8rem;">
+        <input type="number" class="prop-input" id="salePrice" value="8" min="1" step="0.5" oninput="updatePrice()" style="width:80px"/>
+        <span style="font-size:0.85rem;color:var(--grey)">€ / planche</span>
+      </div>
+      <div class="price-display">
+        <div class="price-big" id="priceDisplay">8 €</div>
+        <div class="price-sub">Prix de vente</div>
+      </div>
+      <button class="btn-sm btn-red-sm btn-full" onclick="exportSheet()">📥 Exporter PNG (300 DPI)</button>
+      <button class="btn-sm btn-full" onclick="exportSheet('plotter')">⬛ Version plotter</button>
+      <button class="btn-sm btn-full" onclick="saveProject()">💾 Sauvegarder projet</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════
+   ÉTAT
+═══════════════════════════════════════════════ */
+const MM2PX = 3.7795; // 96 DPI → px
+const EXPORT_DPI = 300;
+const EXPORT_SCALE = EXPORT_DPI / 96;
+
+let sheet = {
+  wMM: 200, hMM: 200,
+  bg: '#ffffff',
+  items: []
+};
+let selected = null;
+let tool = 'select';
+let drag = null;
+let history = [];
+let imgLib = [];  // {id, name, src, img}
+let idCnt = 0;
+let zoom = 1;
+let canvasW, canvasH;
+
+const canvas = document.getElementById('sheetCanvas');
+const ctx = canvas.getContext('2d');
+const DPR = window.devicePixelRatio || 1;
+
+/* ═══════════════════════════════════════════════
+   INIT CANVAS
+═══════════════════════════════════════════════ */
+function initCanvas() {
+  const area = document.getElementById('canvasArea');
+  const maxW = area.clientWidth - 40;
+  const maxH = area.clientHeight - 40;
+
+  const sheetPxW = sheet.wMM * MM2PX;
+  const sheetPxH = sheet.hMM * MM2PX;
+
+  zoom = Math.min(maxW / sheetPxW, maxH / sheetPxH, 1.5);
+  canvasW = sheetPxW * zoom;
+  canvasH = sheetPxH * zoom;
+
+  canvas.width  = canvasW * DPR;
+  canvas.height = canvasH * DPR;
+  canvas.style.width  = canvasW + 'px';
+  canvas.style.height = canvasH + 'px';
+  ctx.scale(DPR, DPR);
+
+  document.getElementById('zoomInfo').textContent = 'Zoom ' + Math.round(zoom * 100) + '%';
+  document.getElementById('infoFormat').textContent = sheet.wMM + '×' + sheet.hMM + ' mm';
+  redraw();
+}
+
+/* ═══════════════════════════════════════════════
+   DESSIN
+═══════════════════════════════════════════════ */
+function redraw() {
+  ctx.clearRect(0, 0, canvasW, canvasH);
+
+  // Fond planche
+  if (sheet.bg === 'transparent') {
+    // Damier
+    const sz = 10;
+    for (let x = 0; x < canvasW; x += sz*2) {
+      for (let y = 0; y < canvasH; y += sz*2) {
+        ctx.fillStyle = '#ccc'; ctx.fillRect(x, y, sz, sz);
+        ctx.fillStyle = '#ccc'; ctx.fillRect(x+sz, y+sz, sz, sz);
+      }
+    }
+  } else {
+    ctx.fillStyle = sheet.bg;
+    ctx.fillRect(0, 0, canvasW, canvasH);
+  }
+
+  // Items
+  for (const item of sheet.items) {
+    drawItem(ctx, item, zoom, false);
+  }
+
+  // Sélection
+  if (selected) {
+    const it = selected;
+    const x  = it.x * zoom, y = it.y * zoom;
+    const w  = it.w * zoom, h = it.h * zoom;
+    ctx.save();
+    ctx.strokeStyle = '#E0160A';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4,3]);
+    ctx.strokeRect(x - 4, y - 4, w + 8, h + 8);
+    ctx.setLineDash([]);
+    // Handles
+    const handles = getHandles(it);
+    for (const [hx, hy] of handles) {
+      ctx.fillStyle = '#fff';
+      ctx.strokeStyle = '#E0160A';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(hx * zoom, hy * zoom, 5, 0, Math.PI*2);
+      ctx.fill(); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  updateLayersList();
+  document.getElementById('infoCount').textContent = sheet.items.length;
+}
+
+function drawItem(c, item, z, forExport) {
+  const x = item.x * z, y = item.y * z;
+  const w = item.w * z, h = item.h * z;
+  c.save();
+  c.globalAlpha = item.opacity ?? 1;
+
+  if (item.type === 'image' && item.img) {
+    c.drawImage(item.img, x, y, w, h);
+  } else if (item.type === 'text') {
+    const fs = (item.fontSize || 24) * z;
+    c.font = `${item.fontWeight || 700} ${fs}px '${item.fontFamily || 'Bebas Neue'}', sans-serif`;
+    c.fillStyle = item.color || '#000';
+    c.textBaseline = 'top';
+    c.fillText(item.text || '', x, y);
+  } else if (item.type === 'shape') {
+    c.fillStyle = item.color || '#E0160A';
+    drawShape(c, item.shape, x, y, w, h);
+  }
+  c.restore();
+}
+
+function drawShape(c, shape, x, y, w, h) {
+  if (shape === 'rect') {
+    c.fillRect(x, y, w, h);
+  } else if (shape === 'circle') {
+    c.beginPath();
+    c.ellipse(x + w/2, y + h/2, w/2, h/2, 0, 0, Math.PI*2);
+    c.fill();
+  } else if (shape === 'star') {
+    drawStar(c, x + w/2, y + h/2, 5, w/2, w/4);
+  } else if (shape === 'heart') {
+    drawHeart(c, x, y, w, h);
+  }
+}
+
+function drawStar(c, cx, cy, pts, outer, inner) {
+  c.beginPath();
+  for (let i = 0; i < pts * 2; i++) {
+    const r = i % 2 === 0 ? outer : inner;
+    const a = (i * Math.PI / pts) - Math.PI/2;
+    i === 0 ? c.moveTo(cx + Math.cos(a)*r, cy + Math.sin(a)*r) : c.lineTo(cx + Math.cos(a)*r, cy + Math.sin(a)*r);
+  }
+  c.closePath(); c.fill();
+}
+
+function drawHeart(c, x, y, w, h) {
+  const cx = x + w/2, top = y + h*0.25;
+  c.beginPath();
+  c.moveTo(cx, y + h);
+  c.bezierCurveTo(x, y + h*0.6, x, top, cx - w/4, top);
+  c.bezierCurveTo(x + w*0.1, y, cx, y + h*0.2, cx, top + h*0.1);
+  c.bezierCurveTo(cx, y + h*0.2, x + w*0.9, y, cx + w/4, top);
+  c.bezierCurveTo(x + w, top, x + w, y + h*0.6, cx, y + h);
+  c.fill();
+}
+
+function getHandles(item) {
+  const { x, y, w, h } = item;
+  return [
+    [x, y], [x+w/2, y], [x+w, y],
+    [x, y+h/2],           [x+w, y+h/2],
+    [x, y+h], [x+w/2, y+h], [x+w, y+h]
+  ];
+}
+
+/* ═══════════════════════════════════════════════
+   INTERACTIONS
+═══════════════════════════════════════════════ */
+function getCanvasPos(e) {
+  const r = canvas.getBoundingClientRect();
+  const cx = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
+  const cy = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
+  return { x: cx / zoom, y: cy / zoom };
+}
+
+function hitTest(px, py) {
+  for (let i = sheet.items.length - 1; i >= 0; i--) {
+    const it = sheet.items[i];
+    if (px >= it.x && px <= it.x + it.w && py >= it.y && py <= it.y + it.h) return it;
+  }
+  return null;
+}
+
+function hitHandle(item, px, py) {
+  if (!item) return null;
+  const handles = getHandles(item);
+  const thres = 8 / zoom;
+  for (let i = 0; i < handles.length; i++) {
+    const [hx, hy] = handles[i];
+    if (Math.abs(px - hx) < thres && Math.abs(py - hy) < thres) return i;
+  }
+  return null;
+}
+
+canvas.addEventListener('pointerdown', e => {
+  e.preventDefault();
+  const p = getCanvasPos(e);
+  if (tool === 'select') {
+    if (selected) {
+      const h = hitHandle(selected, p.x, p.y);
+      if (h !== null) {
+        drag = { type: 'resize', handle: h, startX: p.x, startY: p.y, origX: selected.x, origY: selected.y, origW: selected.w, origH: selected.h };
+        return;
+      }
+    }
+    const hit = hitTest(p.x, p.y);
+    if (hit) {
+      selected = hit;
+      drag = { type: 'move', startX: p.x, startY: p.y, origX: hit.x, origY: hit.y };
+      canvas.classList.add('moving');
+    } else {
+      selected = null;
+    }
+    updatePropPanel();
+    redraw();
+  }
+});
+
+window.addEventListener('pointermove', e => {
+  if (!drag) return;
+  const p = getCanvasPos(e);
+  const dx = p.x - drag.startX, dy = p.y - drag.startY;
+  if (drag.type === 'move' && selected) {
+    selected.x = Math.max(0, drag.origX + dx);
+    selected.y = Math.max(0, drag.origY + dy);
+  } else if (drag.type === 'resize' && selected) {
+    const h = drag.handle;
+    if (h === 7) { // bottom-right
+      selected.w = Math.max(20, drag.origW + dx);
+      selected.h = Math.max(20, drag.origH + dy);
+    } else if (h === 0) { // top-left
+      selected.x = drag.origX + dx;
+      selected.y = drag.origY + dy;
+      selected.w = Math.max(20, drag.origW - dx);
+      selected.h = Math.max(20, drag.origH - dy);
+    } else if (h === 2) { // top-right
+      selected.y = drag.origY + dy;
+      selected.w = Math.max(20, drag.origW + dx);
+      selected.h = Math.max(20, drag.origH - dy);
+    } else if (h === 6) { // bottom-left
+      selected.x = drag.origX + dx;
+      selected.w = Math.max(20, drag.origW - dx);
+      selected.h = Math.max(20, drag.origH + dy);
+    } else if (h === 1) { // top
+      selected.y = drag.origY + dy;
+      selected.h = Math.max(20, drag.origH - dy);
+    } else if (h === 5) { // bottom
+      selected.h = Math.max(20, drag.origH + dy);
+    } else if (h === 3) { // left
+      selected.x = drag.origX + dx;
+      selected.w = Math.max(20, drag.origW - dx);
+    } else if (h === 4) { // right
+      selected.w = Math.max(20, drag.origW + dx);
+    }
+    updatePropPanel();
+  }
+  redraw();
+});
+
+window.addEventListener('pointerup', () => {
+  if (drag) saveHistory();
+  drag = null;
+  canvas.classList.remove('moving');
+});
+
+// Double-click pour sélectionner
+canvas.addEventListener('dblclick', e => {
+  const p = getCanvasPos(e);
+  const hit = hitTest(p.x, p.y);
+  if (hit) { selected = hit; updatePropPanel(); redraw(); }
+});
+
+// Keyboard shortcuts
+window.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'Delete' || e.key === 'Backspace') deleteSelected();
+  if (e.key === 'd' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); duplicateSelected(); }
+  if (e.key === 'z' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); undo(); }
+  if (selected) {
+    const step = e.shiftKey ? 10 : 1;
+    if (e.key === 'ArrowLeft')  { selected.x -= step; redraw(); }
+    if (e.key === 'ArrowRight') { selected.x += step; redraw(); }
+    if (e.key === 'ArrowUp')    { selected.y -= step; redraw(); }
+    if (e.key === 'ArrowDown')  { selected.y += step; redraw(); }
+  }
+});
+
+/* ═══════════════════════════════════════════════
+   IMAGES
+═══════════════════════════════════════════════ */
+document.getElementById('fileInput').addEventListener('change', e => loadFiles(e.target.files));
+
+const uploadZone = document.getElementById('uploadZone');
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag'));
+uploadZone.addEventListener('drop', e => { e.preventDefault(); uploadZone.classList.remove('drag'); loadFiles(e.dataTransfer.files); });
+
+function loadFiles(files) {
+  for (const file of files) {
+    if (!file.type.startsWith('image/')) continue;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        const id = idCnt++;
+        imgLib.push({ id, name: file.name.replace(/\.[^.]+$/, ''), src: ev.target.result, img });
+        renderLibrary();
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+function renderLibrary() {
+  const lib = document.getElementById('imgLibrary');
+  lib.innerHTML = imgLib.map(im => `
+    <div class="lib-item" draggable="true" onclick="addImageToSheet(${im.id})" ondragstart="dragLibItem(event,${im.id})">
+      <img src="${im.src}" alt="${im.name}" />
+      <button class="lib-del" onclick="event.stopPropagation();removeFromLib(${im.id})">✕</button>
+    </div>`).join('') || '<div class="lib-add-hint" style="grid-column:1/-1">Vos images apparaîtront ici</div>';
+}
+
+function removeFromLib(id) {
+  imgLib = imgLib.filter(i => i.id !== id);
+  renderLibrary();
+}
+
+function dragLibItem(e, id) {
+  e.dataTransfer.setData('libId', id);
+}
+
+canvas.addEventListener('dragover', e => e.preventDefault());
+canvas.addEventListener('drop', e => {
+  e.preventDefault();
+  const id = +e.dataTransfer.getData('libId');
+  const r = canvas.getBoundingClientRect();
+  const px = (e.clientX - r.left) / zoom;
+  const py = (e.clientY - r.top) / zoom;
+  addImageToSheet(id, px, py);
+});
+
+function addImageToSheet(id, px, py) {
+  const lib = imgLib.find(i => i.id === id);
+  if (!lib) return;
+  const maxW = Math.min(80, sheet.wMM * 0.4);
+  const ratio = lib.img.naturalHeight / lib.img.naturalWidth;
+  const w = maxW, h = w * ratio;
+  const x = px !== undefined ? px - w/2 : (sheet.wMM - w) / 2;
+  const y = py !== undefined ? py - h/2 : (sheet.hMM - h) / 2;
+  const item = { id: idCnt++, type: 'image', src: lib.src, img: lib.img, name: lib.name, x, y, w, h, opacity: 1 };
+  sheet.items.push(item);
+  selected = item;
+  updatePropPanel();
+  saveHistory();
+  redraw();
+}
+
+/* ═══════════════════════════════════════════════
+   TEXTE
+═══════════════════════════════════════════════ */
+function addText() {
+  const text = document.getElementById('textInput').value.trim();
+  if (!text) return;
+  const font = document.getElementById('textFont').value;
+  const color = document.getElementById('textColor').value;
+  const item = { id: idCnt++, type: 'text', text, fontFamily: font, fontWeight: 700, fontSize: 24, color, x: 20, y: 20, w: 120, h: 30, opacity: 1 };
+  // Mesure auto
+  ctx.font = `700 ${24 * zoom}px '${font}', sans-serif`;
+  const m = ctx.measureText(text);
+  item.w = m.width / zoom + 4;
+  sheet.items.push(item);
+  selected = item;
+  updatePropPanel();
+  saveHistory();
+  redraw();
+}
+
+/* ═══════════════════════════════════════════════
+   FORMES
+═══════════════════════════════════════════════ */
+function addShape(shape) {
+  const color = document.getElementById('shapeColor').value;
+  const cx = sheet.wMM / 2 - 25, cy = sheet.hMM / 2 - 25;
+  const item = { id: idCnt++, type: 'shape', shape, color, x: cx, y: cy, w: 50, h: 50, opacity: 1 };
+  sheet.items.push(item);
+  selected = item;
+  updatePropPanel();
+  saveHistory();
+  redraw();
+}
+
+/* ═══════════════════════════════════════════════
+   PROP PANEL
+═══════════════════════════════════════════════ */
+function updatePropPanel() {
+  const p = document.getElementById('propPanel');
+  if (!selected) { p.innerHTML = '<div class="prop-empty">Sélectionnez un élément<br>pour modifier ses propriétés</div>'; return; }
+  const it = selected;
+  p.innerHTML = `
+    <div class="prop-field">
+      <label class="f-label">Position (mm)</label>
+      <div class="prop-row">
+        <input class="prop-input" type="number" value="${Math.round(it.x)}" oninput="setProp('x',+this.value)" placeholder="X"/>
+        <input class="prop-input" type="number" value="${Math.round(it.y)}" oninput="setProp('y',+this.value)" placeholder="Y"/>
+      </div>
+    </div>
+    <div class="prop-field">
+      <label class="f-label">Taille (mm)</label>
+      <div class="prop-row">
+        <input class="prop-input" type="number" value="${Math.round(it.w)}" oninput="setProp('w',+this.value)" placeholder="Larg"/>
+        <input class="prop-input" type="number" value="${Math.round(it.h)}" oninput="setProp('h',+this.value)" placeholder="Haut"/>
+      </div>
+    </div>
+    <div class="prop-field">
+      <label class="f-label">Opacité — ${Math.round((it.opacity??1)*100)}%</label>
+      <input class="sl" type="range" min="0" max="1" step="0.01" value="${it.opacity??1}" oninput="setProp('opacity',+this.value);this.previousElementSibling.textContent='Opacité — '+Math.round(this.value*100)+'%'"/>
+    </div>
+    ${it.type==='text' ? `
+    <div class="prop-field">
+      <label class="f-label">Texte</label>
+      <input class="prop-input" type="text" value="${it.text}" oninput="setProp('text',this.value)"/>
+    </div>
+    <div class="prop-field">
+      <label class="f-label">Taille police</label>
+      <input class="prop-input" type="number" value="${it.fontSize||24}" oninput="setProp('fontSize',+this.value)"/>
+    </div>
+    <div class="prop-field">
+      <label class="f-label">Couleur</label>
+      <input type="color" value="${it.color||'#000'}" oninput="setProp('color',this.value)" style="width:100%;height:36px;border:1px solid var(--border);background:none;cursor:pointer;"/>
+    </div>` : ''}
+    ${it.type==='shape' ? `
+    <div class="prop-field">
+      <label class="f-label">Couleur</label>
+      <input type="color" value="${it.color||'#E0160A'}" oninput="setProp('color',this.value)" style="width:100%;height:36px;border:1px solid var(--border);background:none;cursor:pointer;"/>
+    </div>` : ''}
+    <div class="prop-field" style="margin-top:0.5rem">
+      <div class="prop-btn-row">
+        <button class="prop-btn" onclick="moveLayer('up')">↑</button>
+        <button class="prop-btn" onclick="moveLayer('down')">↓</button>
+        <button class="prop-btn" onclick="moveLayer('top')">⬆ Dessus</button>
+        <button class="prop-btn" onclick="moveLayer('bottom')">⬇ Dessous</button>
+      </div>
+    </div>
+  `;
+}
+
+function setProp(key, val) {
+  if (!selected) return;
+  selected[key] = val;
+  redraw();
+}
+
+/* ═══════════════════════════════════════════════
+   COUCHES
+═══════════════════════════════════════════════ */
+function updateLayersList() {
+  const list = document.getElementById('layersList');
+  if (!sheet.items.length) { list.innerHTML = '<div style="text-align:center;font-size:0.75rem;color:var(--grey2);padding:0.5rem;">Aucun élément</div>'; return; }
+  list.innerHTML = [...sheet.items].reverse().map(it => {
+    const thumb = it.type==='image' ? `<img class="layer-thumb" src="${it.src}" />` : `<div class="layer-thumb" style="background:${it.color||'#E0160A'};display:flex;align-items:center;justify-content:center;font-size:0.7rem">${it.type==='text'?'T':'⬡'}</div>`;
+    return `<div class="layer-item${it===selected?' selected':''}" onclick="selectById(${it.id})">
+      ${thumb}
+      <span class="layer-name">${it.name||it.text||it.shape||'Élément'}</span>
+      <div class="layer-btns">
+        <button class="layer-btn del" onclick="event.stopPropagation();deleteById(${it.id})">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function selectById(id) { selected = sheet.items.find(i=>i.id===id)||null; updatePropPanel(); redraw(); }
+function deleteById(id) { sheet.items = sheet.items.filter(i=>i.id!==id); if(selected?.id===id) selected=null; updatePropPanel(); saveHistory(); redraw(); }
+
+function moveLayer(dir) {
+  if (!selected) return;
+  const idx = sheet.items.indexOf(selected);
+  if (dir==='up'    && idx < sheet.items.length-1) { [sheet.items[idx],sheet.items[idx+1]] = [sheet.items[idx+1],sheet.items[idx]]; }
+  if (dir==='down'  && idx > 0)                    { [sheet.items[idx],sheet.items[idx-1]] = [sheet.items[idx-1],sheet.items[idx]]; }
+  if (dir==='top')    { sheet.items.splice(idx,1); sheet.items.push(selected); }
+  if (dir==='bottom') { sheet.items.splice(idx,1); sheet.items.unshift(selected); }
+  redraw();
+}
+
+/* ═══════════════════════════════════════════════
+   OUTILS
+═══════════════════════════════════════════════ */
+function setTool(t, btn) {
+  tool = t;
+  document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function deleteSelected() { if (!selected) return; deleteById(selected.id); }
+
+function duplicateSelected() {
+  if (!selected) return;
+  const clone = JSON.parse(JSON.stringify({...selected, img: undefined}));
+  clone.id = idCnt++;
+  clone.x += 10; clone.y += 10;
+  if (selected.img) clone.img = selected.img;
+  sheet.items.push(clone);
+  selected = clone;
+  updatePropPanel(); saveHistory(); redraw();
+}
+
+function alignItems(dir) {
+  if (!selected) return;
+  if (dir === 'left')   selected.x = 0;
+  if (dir === 'right')  selected.x = sheet.wMM - selected.w;
+  if (dir === 'center') selected.x = (sheet.wMM - selected.w) / 2;
+  redraw();
+}
+
+function autoGrid() {
+  if (!selected) { alert('Sélectionnez un élément d\'abord.'); return; }
+  const cols = +document.getElementById('gridCols').value;
+  const rows = +document.getElementById('gridRows').value;
+  const pw = sheet.wMM, ph = sheet.hMM;
+  const cw = pw / cols, ch = ph / rows;
+  const newItems = [];
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      if (r===0 && c===0) continue;
+      const clone = JSON.parse(JSON.stringify({...selected, img: undefined}));
+      clone.id = idCnt++;
+      clone.x = c * cw + (cw - selected.w) / 2;
+      clone.y = r * ch + (ch - selected.h) / 2;
+      if (selected.img) clone.img = selected.img;
+      newItems.push(clone);
+    }
+  }
+  // Repositionne l'original
+  selected.x = 0 * cw + (cw - selected.w) / 2;
+  selected.y = 0 * ch + (ch - selected.h) / 2;
+  sheet.items.push(...newItems);
+  saveHistory(); redraw();
+}
+
+function clearSheet() {
+  if (!confirm('Vider la planche ?')) return;
+  sheet.items = []; selected = null;
+  updatePropPanel(); saveHistory(); redraw();
+}
+
+/* ═══════════════════════════════════════════════
+   FORMAT / FOND
+═══════════════════════════════════════════════ */
+function setFormat(btn) {
+  document.querySelectorAll('.fmt-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  sheet.wMM = +btn.dataset.w;
+  sheet.hMM = +btn.dataset.h;
+  document.getElementById('customW').value = sheet.wMM;
+  document.getElementById('customH').value = sheet.hMM;
+  initCanvas();
+}
+
+function setCustomFormat() {
+  const w = +document.getElementById('customW').value;
+  const h = +document.getElementById('customH').value;
+  if (w < 10 || h < 10) return;
+  sheet.wMM = w; sheet.hMM = h;
+  document.querySelectorAll('.fmt-btn').forEach(b => b.classList.remove('active'));
+  initCanvas();
+}
+
+function setBg(dot) {
+  document.querySelectorAll('.bg-opt').forEach(d => d.classList.remove('active'));
+  dot.classList.add('active');
+  sheet.bg = dot.dataset.bg;
+  redraw();
+}
+
+function setCustomBg(val) {
+  document.querySelectorAll('.bg-opt').forEach(d => d.classList.remove('active'));
+  sheet.bg = val;
+  redraw();
+}
+
+/* ═══════════════════════════════════════════════
+   HISTORIQUE
+═══════════════════════════════════════════════ */
+function saveHistory() {
+  const snap = JSON.stringify(sheet.items.map(it => ({...it, img: undefined})));
+  history.push(snap);
+  if (history.length > 30) history.shift();
+}
+
+function undo() {
+  if (history.length < 2) return;
+  history.pop();
+  const snap = JSON.parse(history[history.length-1]);
+  sheet.items = snap.map(it => {
+    const orig = sheet.items.find(i => i.id === it.id);
+    it.img = orig?.img;
+    return it;
+  });
+  selected = null; updatePropPanel(); redraw();
+}
+
+/* ═══════════════════════════════════════════════
+   EXPORT
+═══════════════════════════════════════════════ */
+function exportSheet(mode) {
+  const scale = 300 / 96; // 300 DPI
+  const pw = sheet.wMM * MM2PX * scale;
+  const ph = sheet.hMM * MM2PX * scale;
+
+  const tmp = document.createElement('canvas');
+  tmp.width = pw; tmp.height = ph;
+  const tc = tmp.getContext('2d');
+
+  // Fond
+  if (mode === 'plotter') {
+    tc.fillStyle = '#ffffff';
+  } else if (sheet.bg !== 'transparent') {
+    tc.fillStyle = sheet.bg;
+  }
+  if (sheet.bg !== 'transparent' || mode === 'plotter') tc.fillRect(0, 0, pw, ph);
+
+  // Items
+  for (const item of sheet.items) {
+    if (mode === 'plotter' && item.type === 'image') {
+      // Plotter = silhouette noire
+      tc.save();
+      tc.globalCompositeOperation = 'multiply';
+      drawItem(tc, item, scale * MM2PX, true);
+      tc.restore();
+    } else {
+      drawItem(tc, item, scale * MM2PX, true);
+    }
+  }
+
+  const link = document.createElement('a');
+  link.download = `planche_tkm_${mode||'couleur'}_300dpi.png`;
+  link.href = tmp.toDataURL('image/png');
+  link.click();
+}
+
+function saveProject() {
+  const data = { sheet: { wMM: sheet.wMM, hMM: sheet.hMM, bg: sheet.bg }, items: sheet.items.map(it => ({...it, img: undefined, src: it.src})) };
+  const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'planche_tkm.json';
+  a.click();
+}
+
+/* ═══════════════════════════════════════════════
+   PRIX
+═══════════════════════════════════════════════ */
+function updatePrice() {
+  const p = document.getElementById('salePrice').value;
+  document.getElementById('priceDisplay').textContent = p + ' €';
+}
+
+/* ═══════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════ */
+window.addEventListener('resize', initCanvas);
+document.fonts.ready.then(() => { initCanvas(); saveHistory(); });
+</script>
+</body>
+</html>
