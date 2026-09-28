@@ -1,725 +1,268 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>TKM – Simulateur Ciel Étoilé</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet"/>
-  <style>
-    :root {
-      --red: #E0160A;
-      --red-dark: #a50f07;
-      --bg: #0a0a0a;
-      --bg2: #111;
-      --bg3: #181818;
-      --white: #f5f5f5;
-      --grey: #777;
-      --border: rgba(255,255,255,0.07);
-    }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
-    body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; overflow-x: hidden; }
-
-    /* NAV */
-    nav {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 1.2rem 5%;
-      background: rgba(10,10,10,0.95);
-      backdrop-filter: blur(14px);
-      border-bottom: 1px solid var(--border);
-      position: sticky; top: 0; z-index: 100;
-    }
-    .nav-logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: 0.1em; color: var(--white); text-decoration: none; }
-    .nav-logo span { color: var(--red); }
-    .nav-back { font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 0.85rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--grey); text-decoration: none; transition: color 0.2s; }
-    .nav-back:hover { color: var(--white); }
-
-    /* HEADER */
-    .page-header { text-align: center; padding: 3rem 5% 1.5rem; }
-    .page-label { font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.3em; text-transform: uppercase; color: var(--red); margin-bottom: 0.6rem; }
-    .page-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(2.8rem, 7vw, 5.5rem); line-height: 0.95; margin-bottom: 0.8rem; }
-    .page-sub { color: var(--grey); font-size: 0.95rem; max-width: 480px; margin: 0 auto; line-height: 1.65; }
-
-    /* LAYOUT */
-    .main { display: grid; grid-template-columns: 1fr 340px; gap: 2rem; padding: 2rem 5% 5rem; max-width: 1300px; margin: 0 auto; align-items: start; }
-
-    /* CANVAS AREA */
-    .canvas-area { display: flex; flex-direction: column; gap: 1.2rem; }
-
-    .sim-wrapper {
-      position: relative;
-      width: 100%;
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: 0 0 80px rgba(0,0,0,0.9), 0 0 30px rgba(224,22,10,0.05);
-    }
-
-    /* Forme de toit voiture (perspective) */
-    .car-roof-frame {
-      position: relative;
-      width: 100%;
-      padding-bottom: 52%;
-      background: #020208;
-    }
-
-    /* Perspective lines */
-    .car-roof-frame::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background:
-        linear-gradient(135deg, rgba(255,255,255,0.015) 0%, transparent 50%),
-        linear-gradient(225deg, rgba(255,255,255,0.015) 0%, transparent 50%);
-      z-index: 2;
-      pointer-events: none;
-    }
-
-    /* Bord en tissu/cuir simulé */
-    .car-roof-frame::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border: 18px solid #1a1a1a;
-      border-radius: 16px;
-      box-shadow: inset 0 0 40px rgba(0,0,0,0.8);
-      z-index: 3;
-      pointer-events: none;
-    }
-
-    #starCanvas {
-      position: absolute;
-      inset: 0;
-      width: 100%; height: 100%;
-      border-radius: 6px;
-    }
-
-    /* Reflet lumière ambiante */
-    .roof-glow {
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(ellipse 60% 40% at 50% 10%, rgba(255,255,255,0.025) 0%, transparent 60%);
-      z-index: 2;
-      pointer-events: none;
-      border-radius: 16px;
-    }
-
-    /* Label perspective */
-    .sim-label {
-      position: absolute;
-      bottom: 22px;
-      right: 28px;
-      z-index: 10;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 0.6rem;
-      font-weight: 700;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.15);
-    }
-
-    /* Compteur étoiles */
-    .star-counter {
-      display: flex;
-      justify-content: center;
-      gap: 3rem;
-    }
-    .counter-item { text-align: center; }
-    .counter-num {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 2.2rem;
-      color: var(--red);
-      line-height: 1;
-      transition: color 0.3s;
-    }
-    .counter-label {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 0.65rem;
-      font-weight: 700;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--grey);
-    }
-
-    /* SIDEBAR */
-    .sidebar { display: flex; flex-direction: column; gap: 1.2rem; }
-
-    .panel {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      padding: 1.6rem;
-    }
-    .panel-title {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.25rem;
-      letter-spacing: 0.08em;
-      margin-bottom: 1.2rem;
-      display: flex; align-items: center; gap: 0.5rem;
-    }
-    .panel-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-
-    /* FIBER SELECTOR */
-    .fiber-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
-
-    .fiber-btn {
-      background: var(--bg3);
-      border: 2px solid var(--border);
-      color: var(--white);
-      padding: 1rem 0.5rem;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.3rem;
-      transition: all 0.2s;
-      clip-path: polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%);
-    }
-    .fiber-btn:hover { border-color: rgba(255,255,255,0.2); }
-    .fiber-btn.active { border-color: var(--red); background: rgba(224,22,10,0.1); }
-    .fiber-num {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.8rem;
-      line-height: 1;
-      color: var(--white);
-      transition: color 0.2s;
-    }
-    .fiber-btn.active .fiber-num { color: var(--red); }
-    .fiber-tag {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 0.62rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--grey);
-    }
-    .fiber-badge {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 0.58rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--red);
-      background: rgba(224,22,10,0.1);
-      padding: 0.1rem 0.4rem;
-      border: 1px solid rgba(224,22,10,0.3);
-    }
-
-    /* TOGGLE SWITCH */
-    .toggle-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.8rem 0;
-      border-bottom: 1px solid var(--border);
-      cursor: pointer;
-    }
-    .toggle-row:last-child { border-bottom: none; padding-bottom: 0; }
-    .toggle-row:first-child { padding-top: 0; }
-
-    .toggle-info { display: flex; flex-direction: column; gap: 0.2rem; }
-    .toggle-name {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-weight: 600;
-      font-size: 0.95rem;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-    .toggle-sub { font-size: 0.75rem; color: var(--grey); }
-
-    .toggle {
-      width: 44px; height: 24px;
-      background: var(--bg3);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      position: relative;
-      transition: background 0.25s, border-color 0.25s;
-      flex-shrink: 0;
-    }
-    .toggle::after {
-      content: '';
-      position: absolute;
-      top: 3px; left: 3px;
-      width: 16px; height: 16px;
-      background: var(--grey);
-      border-radius: 50%;
-      transition: transform 0.25s, background 0.25s;
-    }
-    .toggle.on { background: rgba(224,22,10,0.2); border-color: var(--red); }
-    .toggle.on::after { transform: translateX(20px); background: var(--red); }
-
-    /* SLIDER */
-    .form-label { font-family: 'Barlow Condensed', sans-serif; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--grey); margin-bottom: 0.5rem; display: block; margin-top: 0.8rem; }
-    .slider-row { display: flex; align-items: center; gap: 0.8rem; }
-    .slider { flex: 1; -webkit-appearance: none; height: 3px; background: var(--border); outline: none; }
-    .slider::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; background: var(--red); cursor: pointer; clip-path: polygon(50% 0%,100% 50%,50% 100%,0% 50%); }
-    .slider-val { font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; color: var(--red); min-width: 3rem; text-align: right; }
-
-    /* COLOR PICKS */
-    .color-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-    .color-dot {
-      width: 30px; height: 30px;
-      border-radius: 50%;
-      border: 2px solid transparent;
-      cursor: pointer;
-      transition: transform 0.15s, border-color 0.15s;
-    }
-    .color-dot:hover, .color-dot.active { transform: scale(1.15); border-color: var(--white); }
-
-    /* ORDER */
-    .order-panel { background: var(--bg2); border: 1px solid var(--border); padding: 1.6rem; }
-    .order-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.25rem; letter-spacing: 0.08em; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem; }
-    .order-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-
-    .order-recap { background: var(--bg3); border: 1px solid var(--border); padding: 1rem 1.2rem; margin-bottom: 1rem; }
-    .recap-row { display: flex; justify-content: space-between; font-size: 0.88rem; padding-bottom: 0.4rem; border-bottom: 1px solid var(--border); margin-bottom: 0.4rem; }
-    .recap-row:last-child { border: none; margin: 0; padding: 0; }
-    .recap-key { color: var(--grey); }
-    .recap-val { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; color: var(--white); }
-    .recap-val.red { color: var(--red); }
-
-    .btn-red { background: var(--red); color: #fff; border: none; padding: 0.85rem 1.5rem; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 0.9rem; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; width: 100%; clip-path: polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%); transition: background 0.2s; margin-bottom: 0.5rem; }
-    .btn-red:hover { background: var(--red-dark); }
-    .btn-grey { background: transparent; color: var(--white); border: 1px solid var(--border); padding: 0.85rem 1.5rem; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 0.9rem; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; width: 100%; clip-path: polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%); transition: all 0.2s; }
-    .btn-grey:hover { border-color: var(--red); color: var(--red); }
-
-    /* RESPONSIVE */
-    @media (max-width: 960px) { .main { grid-template-columns: 1fr; } }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Simulateur de ciel étoilé · TKM Auto</title>
+<meta name="description" content="Simulez le ciel étoilé de votre voiture : 250 à 1000 fibres optiques, scintillement, étoiles filantes et couleur de lumière. Dès 350 €.">
+<link rel="canonical" href="https://www.tkm-auto.fr/ciel.html">
+<meta name="theme-color" content="#050A16">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tkm.css">
+<style>
+.sim{display:grid;grid-template-columns:1fr 340px;gap:1.2rem;align-items:start;padding-bottom:clamp(4rem,8vw,6rem)}
+.view{position:sticky;top:88px}
+.roof{position:relative;background:#010308;border:1px solid var(--trait);overflow:hidden}
+.roof canvas{display:block;width:100%;height:auto;aspect-ratio:16/10}
+.roof-bar{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;padding:.9rem 1.1rem;border:1px solid var(--trait);border-top:none;background:var(--carbone);font-size:.88rem;color:var(--gris)}
+.roof-bar b{color:#fff;font-stretch:112%;font-weight:800}
+.fs{position:absolute;right:.8rem;top:.8rem;padding:.45rem .8rem;font-size:.8rem;background:rgba(5,10,22,.7);border:1px solid var(--trait2);color:var(--chrome);backdrop-filter:blur(6px)}
+.fs:hover{border-color:var(--xenon)}
+.roof:fullscreen{display:flex;align-items:center;justify-content:center;border:none}
+.roof:fullscreen canvas{width:100vw;height:100vh;aspect-ratio:auto;object-fit:contain}
+.tiers{grid-template-columns:1fr 1fr}
+.tiers .chip{padding:1rem .6rem;align-items:flex-start;text-align:left}
+.tiers b{font-stretch:120%;font-weight:850;font-size:1.5rem;line-height:1;color:#fff}
+.tiers .chip span{font-size:.85rem;color:var(--gris)}
+.tiers .chip.on span{color:var(--xenon)}
+.price-line{display:flex;justify-content:space-between;align-items:baseline;margin:.2rem 0 1rem}
+.price-line b{font-stretch:120%;font-weight:850;font-size:2rem;color:#fff}
+.btns{display:grid;gap:.6rem}
+@media(max-width:980px){.sim{grid-template-columns:1fr}.view{position:static}}
+</style>
 </head>
 <body>
 
-<nav>
-  <a href="index.html" class="nav-logo">TK<span>M</span></a>
-  <a href="index.html" class="nav-back">← Retour au site</a>
-</nav>
+<div data-tkm-nav></div>
 
-<div class="page-header">
-  <div class="page-label">Personnalisation</div>
-  <h1 class="page-title">Simulateur<br><span style="color:var(--red)">Ciel Étoilé</span></h1>
-  <p class="page-sub">Visualise ton futur ciel de toit en temps réel. Ajuste le nombre de fibres, les étoiles filantes et la couleur de lumière.</p>
-</div>
+<main>
+  <header class="page-head" style="padding-bottom:1.5rem">
+    <div class="wrap">
+      <p class="crumb"><a href="index.html">Accueil</a> / Configurateurs</p>
+      <h1 class="display">Votre ciel étoilé</h1>
+      <p class="lead">Voici votre plafond vu depuis le siège conducteur. Changez le nombre de fibres, les effets et la couleur pour trouver l'ambiance qui vous plaît.</p>
+    </div>
+  </header>
 
-<div class="main">
-
-  <!-- CANVAS -->
-  <div class="canvas-area">
-    <div class="sim-wrapper">
-      <div class="car-roof-frame">
-        <canvas id="starCanvas"></canvas>
-        <div class="roof-glow"></div>
-        <div class="sim-label">Vue plafond habitacle</div>
+  <div class="wrap sim">
+    <div class="view">
+      <div class="roof" id="roof">
+        <canvas id="sky" aria-label="Simulation du ciel étoilé dans le plafond de la voiture"></canvas>
+        <button class="fs" id="fsBtn" type="button" hidden>Plein écran</button>
+      </div>
+      <div class="roof-bar">
+        <span><b id="cFib">250</b> fibres</span>
+        <span>Étoiles filantes visibles : <b id="cShoot">0</b></span>
       </div>
     </div>
 
-    <div class="star-counter">
-      <div class="counter-item">
-        <div class="counter-num" id="cntFibers">250</div>
-        <div class="counter-label">Fibres</div>
-      </div>
-      <div class="counter-item">
-        <div class="counter-num" id="cntShooting" style="color:var(--white)">0</div>
-        <div class="counter-label">Étoiles filantes actives</div>
-      </div>
-      <div class="counter-item">
-        <div class="counter-num" id="cntFPS" style="color:var(--grey);font-size:1.2rem">—</div>
-        <div class="counter-label">FPS</div>
-      </div>
-    </div>
-  </div>
+    <aside>
+      <section class="panel">
+        <h2 class="panel-title"><span class="step">1</span>Nombre de fibres</h2>
+        <div class="chips tiers" id="tiers" role="radiogroup" aria-label="Formule"></div>
+      </section>
 
-  <!-- SIDEBAR -->
-  <div class="sidebar">
+      <section class="panel">
+        <h2 class="panel-title"><span class="step">2</span>Effets</h2>
+        <button class="toggle-row" type="button" id="tgShoot" aria-pressed="false">
+          <span><strong>Étoiles filantes</strong><span>Des météores traversent le plafond, +50 €</span></span><span class="switch"></span>
+        </button>
+        <button class="toggle-row" type="button" id="tgTwinkle" aria-pressed="false">
+          <span><strong>Scintillement</strong><span id="twHint">Les fibres varient doucement d'intensité</span></span><span class="switch"></span>
+        </button>
+      </section>
 
-    <!-- FIBRES -->
-    <div class="panel">
-      <div class="panel-title">01 — Nombre de Fibres</div>
-      <div class="fiber-grid">
-        <button class="fiber-btn active" data-count="250" onclick="setFibers(this)">
-          <span class="fiber-num">250</span>
-          <span class="fiber-tag">fibres</span>
-          <span class="fiber-badge">Essentiel</span>
-        </button>
-        <button class="fiber-btn" data-count="500" onclick="setFibers(this)">
-          <span class="fiber-num">500</span>
-          <span class="fiber-tag">fibres</span>
-          <span class="fiber-badge">Confort</span>
-        </button>
-        <button class="fiber-btn" data-count="800" onclick="setFibers(this)">
-          <span class="fiber-num">800</span>
-          <span class="fiber-tag">fibres</span>
-          <span class="fiber-badge">Premium</span>
-        </button>
-        <button class="fiber-btn" data-count="1000" onclick="setFibers(this)">
-          <span class="fiber-num">1000</span>
-          <span class="fiber-tag">fibres</span>
-          <span class="fiber-badge">Prestige</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- EFFETS -->
-    <div class="panel">
-      <div class="panel-title">02 — Effets</div>
-
-      <div class="toggle-row" onclick="toggleEffect('shooting')">
-        <div class="toggle-info">
-          <span class="toggle-name">⭐ Étoiles Filantes</span>
-          <span class="toggle-sub">Météores animés en temps réel</span>
+      <section class="panel">
+        <h2 class="panel-title"><span class="step">3</span>Lumière</h2>
+        <div class="field"><span class="label">Couleur</span><div class="swatches" id="colors"></div></div>
+        <div class="field">
+          <span class="label">Intensité</span>
+          <div class="range-row"><input class="range" type="range" id="bright" min="30" max="100" value="85" aria-label="Intensité"><span class="range-val" id="brightV">85 %</span></div>
         </div>
-        <div class="toggle" id="tog-shooting"></div>
-      </div>
+      </section>
 
-      <div class="toggle-row" onclick="toggleEffect('twinkle')">
-        <div class="toggle-info">
-          <span class="toggle-name">✨ Scintillement</span>
-          <span class="toggle-sub">Variation d'intensité aléatoire</span>
+      <section class="panel">
+        <h2 class="panel-title"><span class="step">4</span>Votre formule</h2>
+        <div class="recap" id="recap"></div>
+        <div class="price-line"><span class="muted">Prix pour une citadine ou berline</span><b id="price">–</b></div>
+        <div class="btns">
+          <a class="btn btn-block" id="payBtn" href="contact.html" target="_blank" rel="noopener">Payer en ligne</a>
+          <a class="btn btn-ghost btn-block" id="quoteBtn" href="contact.html">Demander un devis avec ces réglages</a>
         </div>
-        <div class="toggle" id="tog-twinkle"></div>
-      </div>
-    </div>
-
-    <!-- COULEUR -->
-    <div class="panel">
-      <div class="panel-title">03 — Couleur de Lumière</div>
-      <div class="color-row">
-        <div class="color-dot active" style="background:#ffffff" data-color="#ffffff" onclick="setColor(this)" title="Blanc pur"></div>
-        <div class="color-dot" style="background:#b8d4ff" data-color="#b8d4ff" onclick="setColor(this)" title="Bleu glacé"></div>
-        <div class="color-dot" style="background:#E0160A" data-color="#E0160A" onclick="setColor(this)" title="Rouge TKM"></div>
-        <div class="color-dot" style="background:#ffe4b8" data-color="#ffe4b8" onclick="setColor(this)" title="Blanc chaud"></div>
-        <div class="color-dot" style="background:#b8ffd4" data-color="#b8ffd4" onclick="setColor(this)" title="Vert"></div>
-        <div class="color-dot" style="background:#d4b8ff" data-color="#d4b8ff" onclick="setColor(this)" title="Violet"></div>
-        <div class="color-dot" style="background:#FFD700" data-color="#FFD700" onclick="setColor(this)" title="Or"></div>
-        <div class="color-dot" style="background:#ff69b4" data-color="#ff69b4" onclick="setColor(this)" title="Rose"></div>
-      </div>
-
-      <label class="form-label">Intensité lumineuse</label>
-      <div class="slider-row">
-        <input type="range" class="slider" id="brightnessSlider" min="30" max="100" value="85" oninput="setBrightness(this.value)" />
-        <span class="slider-val" id="brightnessVal">85%</span>
-      </div>
-    </div>
-
-    <!-- COMMANDE -->
-    <div class="order-panel">
-      <div class="order-title">📋 Commande</div>
-      <div class="order-recap" id="orderRecap"></div>
-      <button class="btn-red" onclick="sendOrder()">📩 Demander un devis</button>
-      <button class="btn-grey" onclick="window.print()">🖨 Imprimer / Sauvegarder</button>
-    </div>
-
+        <p class="small" style="margin-top:.8rem">Démontage du plafond, pose des fibres et boîtier LED inclus. Supplément pour SUV et monospace.</p>
+      </section>
+    </aside>
   </div>
-</div>
+</main>
 
+<div data-tkm-footer></div>
+
+<script src="tkm.js"></script>
 <script>
-/* ═══════════════════════════════════════
-   STATE
-═══════════════════════════════════════ */
-const S = {
-  fibers: 250,
-  color: '#ffffff',
-  brightness: 0.85,
-  starSize: 1.5,
-  shooting: false,
-  twinkle: false,
-  pulse: false,
-  nebula: false,
-};
+(function sky(){
+  const $ = id => document.getElementById(id);
+  const cat = TARIFS.find(t => t.id === 'ciel');
+  const TIERS = cat.items.slice(0, 4).map(it => ({ ...it, fibers: parseInt(it.d) }));
+  const COLORS = [['#ffffff','Blanc pur'],['#FFE7C2','Blanc chaud'],['#BFD6FF','Bleu glacier'],['#2F6BFF','Bleu TKM'],['#C9B8FF','Violet'],['#B8FFD9','Vert d\'eau'],['#FFD23F','Or'],['#FF6B9A','Rose']];
+  const S = { tier: TIERS[1], shoot:false, twinkle:false, color:'#ffffff', bright:.85 };
 
-/* ═══════════════════════════════════════
-   CANVAS SETUP
-═══════════════════════════════════════ */
-const canvas = document.getElementById('starCanvas');
-const ctx    = canvas.getContext('2d');
-let W, H, DPR;
+  /* ── Réglages ── */
+  $('tiers').innerHTML = TIERS.map((t,i) => `<button class="chip" type="button" role="radio" data-i="${i}"><b>${t.fibers}</b><span>${t.n}, ${t.p} €</span></button>`).join('');
+  const syncTiers = () => $('tiers').querySelectorAll('.chip').forEach(b => { const on = TIERS[b.dataset.i] === S.tier; b.classList.toggle('on', on); b.setAttribute('aria-checked', on); });
+  $('tiers').addEventListener('click', e => { const b = e.target.closest('.chip'); if (!b) return; S.tier = TIERS[b.dataset.i]; syncTiers(); build(); recap(); });
 
-function resizeCanvas() {
-  const wrapper = canvas.parentElement;
-  DPR = window.devicePixelRatio || 1;
-  W   = wrapper.clientWidth;
-  H   = wrapper.clientHeight;
-  canvas.width  = W * DPR;
-  canvas.height = H * DPR;
-  canvas.style.width  = W + 'px';
-  canvas.style.height = H + 'px';
-  ctx.scale(DPR, DPR);
-  generateStars();
-}
+  const toggle = (id, key) => $(id).addEventListener('click', () => { S[key] = !S[key]; $(id).setAttribute('aria-pressed', S[key]); if (key === 'shoot' && !S.shoot) shooters = []; recap(); if (TKM.reduced) frame(); });
+  toggle('tgShoot', 'shoot'); toggle('tgTwinkle', 'twinkle');
 
-/* ═══════════════════════════════════════
-   STARS
-═══════════════════════════════════════ */
-let stars = [];
+  $('colors').innerHTML = COLORS.map(([c,n]) => `<button class="swatch" type="button" style="background:${c}" data-c="${c}" aria-label="${n}" title="${n}"></button>`).join('');
+  const syncColors = () => $('colors').querySelectorAll('.swatch').forEach(s => s.classList.toggle('on', s.dataset.c === S.color));
+  $('colors').addEventListener('click', e => { const s = e.target.closest('.swatch'); if (!s) return; S.color = s.dataset.c; syncColors(); recap(); if (TKM.reduced) frame(); });
+  $('bright').oninput = e => { S.bright = e.target.value / 100; $('brightV').textContent = e.target.value + ' %'; if (TKM.reduced) frame(); };
 
-function generateStars() {
-  stars = [];
-  for (let i = 0; i < S.fibers; i++) {
-    stars.push({
-      x: Math.random() * W,
-      y: Math.random() * H,
-      r: (0.3 + Math.random() * 0.7) * S.starSize,
-      alpha: 0.4 + Math.random() * 0.6,
-      baseAlpha: 0,
-      twinkleSpeed: 0.003 + Math.random() * 0.008,
-      twinklePhase: Math.random() * Math.PI * 2,
-      pulsePhase: Math.random() * Math.PI * 2,
-    });
-    stars[i].baseAlpha = stars[i].alpha;
-  }
-}
+  /* ── Plafond : forme du pavillon vue depuis le conducteur ── */
+  const cv = $('sky'), cx = cv.getContext('2d');
+  let W, H, stars = [], shooters = [], roofPath, grain;
+  const rgb = h => [1,3,5].map(i => parseInt(h.slice(i, i+2), 16));
 
-/* ═══════════════════════════════════════
-   SHOOTING STARS
-═══════════════════════════════════════ */
-let shooters = [];
-
-function spawnShooter() {
-  if (!S.shooting) return;
-  const angle = (Math.random() * 40 - 70) * Math.PI / 180;
-  shooters.push({
-    x: Math.random() * W,
-    y: Math.random() * H * 0.4,
-    vx: Math.cos(angle) * (4 + Math.random() * 5),
-    vy: Math.sin(angle) * (4 + Math.random() * 5) + 1,
-    len: 60 + Math.random() * 80,
-    alpha: 1,
-    fade: 0.015 + Math.random() * 0.015,
-    trail: [],
-  });
-}
-
-/* ═══════════════════════════════════════
-   DRAW
-═══════════════════════════════════════ */
-let t = 0;
-let lastTime = 0;
-let fps = 0;
-let frameCount = 0;
-let fpsTimer = 0;
-
-function hexToRgb(hex) {
-  const r = parseInt(hex.slice(1,3),16);
-  const g = parseInt(hex.slice(3,5),16);
-  const b = parseInt(hex.slice(5,7),16);
-  return {r,g,b};
-}
-
-function draw(timestamp) {
-  const dt = timestamp - lastTime;
-  lastTime = timestamp;
-  t += 0.016;
-
-  // FPS
-  frameCount++;
-  fpsTimer += dt;
-  if (fpsTimer >= 500) {
-    fps = Math.round(frameCount * 1000 / fpsTimer);
-    frameCount = 0; fpsTimer = 0;
-    document.getElementById('cntFPS').textContent = fps;
+  function shape(){
+    // Arrière du toit en haut (plus étroit), pare-brise en bas (plus large)
+    const p = new Path2D(), t = H * .06, b = H * .94, inT = W * .14, inB = W * .04, r = Math.min(W, H) * .06;
+    p.moveTo(inT + r, t);
+    p.lineTo(W - inT - r, t); p.quadraticCurveTo(W - inT, t, W - inT + r*.3, t + r);
+    p.lineTo(W - inB, b - r); p.quadraticCurveTo(W - inB, b, W - inB - r, b);
+    p.lineTo(inB + r, b); p.quadraticCurveTo(inB, b, inB, b - r);
+    p.lineTo(inT - r*.3, t + r); p.quadraticCurveTo(inT, t, inT + r, t);
+    p.closePath();
+    return p;
   }
 
-  ctx.clearRect(0, 0, W, H);
-
-  // Fond
-  ctx.fillStyle = '#020208';
-  ctx.fillRect(0, 0, W, H);
-
-  // Nébuleuse
-  if (S.nebula) {
-    const {r,g,b} = hexToRgb(S.color);
-    const grad = ctx.createRadialGradient(W*0.5, H*0.4, 0, W*0.5, H*0.4, W*0.5);
-    grad.addColorStop(0, `rgba(${r},${g},${b},0.04)`);
-    grad.addColorStop(0.5, `rgba(${r},${g},${b},0.015)`);
-    grad.addColorStop(1, 'transparent');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, W, H);
-
-    const grad2 = ctx.createRadialGradient(W*0.2, H*0.7, 0, W*0.2, H*0.7, W*0.35);
-    grad2.addColorStop(0, `rgba(${r},${g},${b},0.025)`);
-    grad2.addColorStop(1, 'transparent');
-    ctx.fillStyle = grad2;
-    ctx.fillRect(0, 0, W, H);
+  function makeGrain(){
+    // Texture tissu du ciel de toit, calculée une seule fois
+    const g = document.createElement('canvas'); g.width = 160; g.height = 160;
+    const c = g.getContext('2d'), d = c.createImageData(160, 160);
+    for (let i = 0; i < d.data.length; i += 4){ const v = 5 + Math.random() * 7; d.data[i] = v; d.data[i+1] = v + 1; d.data[i+2] = v + 4; d.data[i+3] = 255; }
+    c.putImageData(d, 0, 0);
+    return cx.createPattern(g, 'repeat');
   }
 
-  // Stars
-  const {r,g,b} = hexToRgb(S.color);
-  for (const star of stars) {
-    let alpha = star.baseAlpha * S.brightness;
+  function size(){
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    W = cv.clientWidth; H = cv.clientHeight;
+    cv.width = W * dpr; cv.height = H * dpr;
+    cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    roofPath = shape();
+    build();
+  }
 
-    if (S.twinkle) {
-      star.twinklePhase += star.twinkleSpeed;
-      const tw = Math.sin(star.twinklePhase) * 0.35;
-      alpha = Math.max(0.05, Math.min(1, alpha + tw));
+  function build(){
+    stars = [];
+    let guard = 0;
+    const n = S.tier.fibers;
+    while (stars.length < n && guard++ < n * 20){
+      const x = Math.random() * W, y = Math.random() * H;
+      if (!cx.isPointInPath(roofPath, x * (cv.width / W), y * (cv.height / H))) continue;
+      // Les fibres proches (bas de l'image) paraissent un peu plus grosses
+      const near = y / H;
+      stars.push({ x, y, r: (.45 + Math.random() * .75) * (.75 + near * .55) * Math.max(.8, W / 900), a: .45 + Math.random() * .55, ph: Math.random() * 6.28, sp: .012 + Math.random() * .03 });
+    }
+    $('cFib').textContent = n;
+    if (TKM.reduced) frame();
+  }
+
+  function frame(){
+    const [r,g,b] = rgb(S.color);
+    cx.fillStyle = '#010308'; cx.fillRect(0, 0, W, H);
+    cx.save(); cx.clip(roofPath);
+    const fab = cx.createLinearGradient(0, 0, 0, H);
+    fab.addColorStop(0, '#05070D'); fab.addColorStop(1, '#0A0D16');
+    cx.fillStyle = fab; cx.fillRect(0, 0, W, H);
+    const vig = cx.createRadialGradient(W/2, H*.55, H*.1, W/2, H*.55, W*.7);
+    vig.addColorStop(0, 'rgba(0,0,0,0)'); vig.addColorStop(1, 'rgba(0,0,0,.55)');
+    cx.fillStyle = vig; cx.fillRect(0, 0, W, H);
+
+    for (const s of stars){
+      let a = s.a * S.bright;
+      if (S.twinkle && !TKM.reduced){ s.ph += s.sp; a *= .45 + (Math.sin(s.ph) + 1) * .3; }
+      const glow = cx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.r * 4.5);
+      glow.addColorStop(0, `rgba(${r},${g},${b},${a * .32})`); glow.addColorStop(1, `rgba(${r},${g},${b},0)`);
+      cx.fillStyle = glow; cx.beginPath(); cx.arc(s.x, s.y, s.r * 4.5, 0, 6.283); cx.fill();
+      cx.fillStyle = `rgba(${Math.min(255, r + 40)},${Math.min(255, g + 40)},${Math.min(255, b + 40)},${a})`;
+      cx.beginPath(); cx.arc(s.x, s.y, s.r, 0, 6.283); cx.fill();
     }
 
-    if (S.pulse) {
-      const pulse = (Math.sin(t * 0.8 + star.pulsePhase) + 1) * 0.5;
-      alpha = alpha * (0.6 + pulse * 0.4);
-    }
-
-    // Glow
-    const glow = ctx.createRadialGradient(star.x, star.y, 0, star.x, star.y, star.r * 4);
-    glow.addColorStop(0, `rgba(${r},${g},${b},${alpha * 0.4})`);
-    glow.addColorStop(1, 'transparent');
-    ctx.fillStyle = glow;
-    ctx.beginPath();
-    ctx.arc(star.x, star.y, star.r * 4, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Core
-    ctx.fillStyle = `rgba(${r},${g},${b},${alpha})`;
-    ctx.beginPath();
-    ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  // Shooting stars
-  if (S.shooting) {
-    // Spawn
-    if (Math.random() < 0.012) spawnShooter();
-
-    for (let i = shooters.length - 1; i >= 0; i--) {
-      const s = shooters[i];
-      s.trail.push({x: s.x, y: s.y});
-      if (s.trail.length > 18) s.trail.shift();
-
-      s.x += s.vx;
-      s.y += s.vy;
-      s.alpha -= s.fade;
-
-      if (s.alpha <= 0 || s.x > W + 50 || s.y > H + 50) {
-        shooters.splice(i, 1);
-        continue;
+    if (S.shoot){
+      if (!TKM.reduced && shooters.length < 3 && Math.random() < .012){
+        const ang = (15 + Math.random() * 30) * Math.PI / 180, sp = 5 + Math.random() * 5;
+        shooters.push({ x: W * (.1 + Math.random() * .5), y: H * (.1 + Math.random() * .35), vx: Math.cos(ang) * sp * (Math.random() < .5 ? 1 : -1), vy: Math.sin(ang) * sp, life: 1, trail: [] });
       }
-
-      // Trail
-      for (let j = 0; j < s.trail.length - 1; j++) {
-        const prog = j / s.trail.length;
-        const a    = s.alpha * prog * 0.7;
-        ctx.strokeStyle = `rgba(${r},${g},${b},${a})`;
-        ctx.lineWidth   = (prog * 2) * (S.starSize * 0.5);
-        ctx.beginPath();
-        ctx.moveTo(s.trail[j].x, s.trail[j].y);
-        ctx.lineTo(s.trail[j+1].x, s.trail[j+1].y);
-        ctx.stroke();
+      for (let i = shooters.length - 1; i >= 0; i--){
+        const m = shooters[i];
+        m.trail.push([m.x, m.y]); if (m.trail.length > 20) m.trail.shift();
+        m.x += m.vx; m.y += m.vy; m.life -= .016;
+        if (m.life <= 0){ shooters.splice(i, 1); continue; }
+        for (let j = 1; j < m.trail.length; j++){
+          const k = j / m.trail.length;
+          cx.strokeStyle = `rgba(${r},${g},${b},${m.life * k * .8 * S.bright})`; cx.lineWidth = k * 2.2;
+          cx.beginPath(); cx.moveTo(...m.trail[j-1]); cx.lineTo(...m.trail[j]); cx.stroke();
+        }
+        cx.fillStyle = `rgba(255,255,255,${m.life * S.bright})`; cx.beginPath(); cx.arc(m.x, m.y, 1.8, 0, 6.283); cx.fill();
       }
-
-      // Head glow
-      const hGlow = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, 6);
-      hGlow.addColorStop(0, `rgba(${r},${g},${b},${s.alpha})`);
-      hGlow.addColorStop(1, 'transparent');
-      ctx.fillStyle = hGlow;
-      ctx.beginPath();
-      ctx.arc(s.x, s.y, 6, 0, Math.PI * 2);
-      ctx.fill();
     }
+    cx.restore();
 
-    document.getElementById('cntShooting').textContent = shooters.length;
-  } else {
-    document.getElementById('cntShooting').textContent = 0;
+    // Plafonnier et pare-soleils
+    const u = Math.min(W, H);
+    cx.fillStyle = '#0c1220'; cx.strokeStyle = 'rgba(141,187,255,.12)'; cx.lineWidth = 1;
+    const lw = W * .16, lh = u * .07;
+    cx.beginPath(); cx.roundRect ? cx.roundRect(W/2 - lw/2, H * .94 - lh - u * .02, lw, lh, 6) : cx.rect(W/2 - lw/2, H * .94 - lh - u * .02, lw, lh); cx.fill(); cx.stroke();
+    const vw = W * .27, vh = u * .09;
+    [[W * .06, 'l'], [W * .94 - vw, 'r']].forEach(([x]) => { cx.beginPath(); cx.roundRect ? cx.roundRect(x, H * .94 - vh, vw, vh, 8) : cx.rect(x, H * .94 - vh, vw, vh); cx.fill(); cx.stroke(); });
+    cx.strokeStyle = 'rgba(141,187,255,.08)'; cx.lineWidth = 2; cx.stroke(roofPath);
+
+    $('cShoot').textContent = S.shoot ? shooters.length : 0;
   }
 
-  requestAnimationFrame(draw);
-}
+  let running = false;
+  const loop = () => { if (!running) return; frame(); requestAnimationFrame(loop); };
+  const start = () => { if (running || TKM.reduced) return; running = true; loop(); };
+  const stop = () => { running = false; };
 
-/* ═══════════════════════════════════════
-   CONTROLS
-═══════════════════════════════════════ */
-function setFibers(btn) {
-  document.querySelectorAll('.fiber-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  S.fibers = +btn.dataset.count;
-  document.getElementById('cntFibers').textContent = S.fibers;
-  generateStars();
-  updateRecap();
-}
+  new IntersectionObserver(e => e[0].isIntersecting ? start() : stop()).observe(cv);
+  document.addEventListener('visibilitychange', () => document.hidden ? stop() : start());
+  addEventListener('resize', () => { size(); frame(); });
 
-function toggleEffect(name) {
-  S[name] = !S[name];
-  const tog = document.getElementById('tog-' + name);
-  tog.classList.toggle('on', S[name]);
-  if (name === 'shooting' && !S.shooting) shooters = [];
-  updateRecap();
-}
+  /* ── Plein écran (si le navigateur le permet) ── */
+  const roof = $('roof');
+  if (roof.requestFullscreen){
+    $('fsBtn').hidden = false;
+    $('fsBtn').onclick = () => document.fullscreenElement ? document.exitFullscreen() : roof.requestFullscreen();
+    document.addEventListener('fullscreenchange', () => { $('fsBtn').textContent = document.fullscreenElement ? 'Quitter' : 'Plein écran'; setTimeout(() => { size(); frame(); }, 60); });
+  }
 
-function setColor(dot) {
-  document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
-  dot.classList.add('active');
-  S.color = dot.dataset.color;
-}
+  /* ── Récapitulatif et prix ── */
+  function recap(){
+    const inclTw = S.tier.fibers >= 1000;
+    $('twHint').textContent = inclTw ? 'Inclus dans la formule Prestige' : 'Les fibres varient doucement d\'intensité';
+    const total = S.tier.p + (S.shoot ? 50 : 0);
+    const col = (COLORS.find(c => c[0] === S.color) || [0, S.color])[1];
+    const fx = [S.shoot && 'étoiles filantes', S.twinkle && 'scintillement'].filter(Boolean).join(' et ') || 'aucun';
+    $('recap').innerHTML = [
+      ['Formule', `${S.tier.n}, ${S.tier.fibers} fibres`], ['Effets', fx], ['Couleur', col],
+      ['Base', S.tier.p + ' €'], S.shoot && ['Étoiles filantes', '+50 €']
+    ].filter(Boolean).map(([k,v]) => `<div class="recap-row"><span>${k}</span><span>${v}</span></div>`).join('');
+    $('price').textContent = total + ' €';
 
-function setBrightness(val) {
-  S.brightness = val / 100;
-  document.getElementById('brightnessVal').textContent = val + '%';
-}
+    const ready = !S.shoot && TKM.isPayReady(S.tier.s);
+    $('payBtn').hidden = !ready;
+    if (ready) $('payBtn').href = TKM.payHref(S.tier.s);
+    const msg = `Ciel étoilé ${S.tier.n} (${S.tier.fibers} fibres), effets : ${fx}, couleur : ${col}, intensité ${Math.round(S.bright*100)} %. Prix estimé ${total} €.`;
+    $('quoteBtn').href = `contact.html?service=ciel&item=${encodeURIComponent(S.tier.n)}&msg=${encodeURIComponent(msg)}`;
+  }
 
-/* ═══════════════════════════════════════
-   RECAP
-═══════════════════════════════════════ */
-function updateRecap() {
-  const effects = [
-    S.shooting ? 'Étoiles filantes' : null,
-    S.twinkle  ? 'Scintillement'    : null,
-
-
-  ].filter(Boolean).join(', ') || 'Aucun';
-
-  const tierMap = { 250:'Essentiel', 500:'Confort', 800:'Premium', 1000:'Prestige' };
-
-  document.getElementById('orderRecap').innerHTML = [
-    ['Nombre de fibres',  `${S.fibers} fibres`],
-    ['Gamme',             tierMap[S.fibers] || ''],
-    ['Effets activés',    effects],
-  ].map(([k,v]) => `
-    <div class="recap-row">
-      <span class="recap-key">${k}</span>
-      <span class="recap-val ${k==='Gamme'?'red':''}">${v}</span>
-    </div>`).join('');
-}
-
-/* ═══════════════════════════════════════
-   ORDER
-═══════════════════════════════════════ */
-function sendOrder() {
-  const tierMap = { 250:'Essentiel', 500:'Confort', 800:'Premium', 1000:'Prestige' };
-  const effects = [
-    S.shooting ? 'Étoiles filantes' : null,
-    S.twinkle  ? 'Scintillement'    : null,
-
-
-  ].filter(Boolean).join(', ') || 'Aucun';
-
-  const subject = encodeURIComponent('Devis Ciel Étoilé – TKM');
-  const body = encodeURIComponent([
-    'Bonjour TKM,',
-    '',
-    'Je souhaite un devis pour un ciel étoilé :',
-    '',
-    `- Nombre de fibres : ${S.fibers} fibres (${tierMap[S.fibers]})`,
-    `- Effets souhaités : ${effects}`,
-    '',
-    'Merci !'
-  ].join('\n'));
-
-  const a = document.createElement('a');
-  a.href = `mailto:contact@tkm-auto.fr?subject=${subject}&body=${body}`;
-  a.target = '_blank';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-}
-
-/* ═══════════════════════════════════════
-   INIT
-═══════════════════════════════════════ */
-window.addEventListener('resize', () => {
-  ctx.resetTransform();
-  resizeCanvas();
-});
-
-document.fonts.ready.then(() => {
-  resizeCanvas();
-  updateRecap();
-  requestAnimationFrame(draw);
-});
+  syncTiers(); syncColors(); size(); recap(); frame(); start();
+})();
 </script>
 </body>
 </html>

@@ -1,357 +1,133 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>TKM – Contact & Devis</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet"/>
-  <style>
-    :root {
-      --red: #E0160A; --red-dark: #a50f07;
-      --bg: #080808; --bg2: #0f0f0f; --bg3: #161616;
-      --white: #f0f0f0; --grey: #666; --border: rgba(255,255,255,0.06);
-    }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
-    body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; overflow-x: hidden; }
-
-    /* NAV */
-    nav { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 5%; background: rgba(8,8,8,0.96); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
-    .nav-logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: 0.1em; color: var(--white); text-decoration: none; }
-    .nav-logo span { color: var(--red); }
-    .nav-back { font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 0.82rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--grey); text-decoration: none; transition: color 0.2s; }
-    .nav-back:hover { color: var(--white); }
-
-    /* HERO */
-    .hero {
-      padding: 5rem 5% 3rem;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
-    .hero::before {
-      content: 'CONTACT';
-      position: absolute;
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: clamp(6rem, 20vw, 16rem);
-      color: rgba(255,255,255,0.018);
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      white-space: nowrap;
-      letter-spacing: 0.1em;
-      pointer-events: none;
-    }
-    .hero-label { font-family: 'Barlow Condensed', sans-serif; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.35em; text-transform: uppercase; color: var(--red); margin-bottom: 1rem; }
-    .hero-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(3rem, 8vw, 6rem); line-height: 0.92; margin-bottom: 1.2rem; }
-    .hero-sub { font-family: 'Barlow Condensed', sans-serif; font-size: 1rem; font-weight: 300; letter-spacing: 0.08em; color: var(--grey); max-width: 450px; margin: 0 auto; line-height: 1.65; }
-
-    /* MAIN */
-    .main { padding: 3rem 5% 6rem; max-width: 960px; margin: 0 auto; display: flex; flex-direction: column; gap: 1.5rem; }
-
-    /* CONTACT CARDS */
-    .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-
-    .contact-card {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      padding: 2.5rem 2rem;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 1rem;
-      position: relative;
-      overflow: hidden;
-      transition: border-color 0.3s, transform 0.2s;
-      text-decoration: none;
-      color: var(--white);
-    }
-    .contact-card::before {
-      content: '';
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      height: 3px;
-      background: var(--red);
-      transform: scaleX(0);
-      transition: transform 0.35s cubic-bezier(.16,1,.3,1);
-      transform-origin: left;
-    }
-    .contact-card:hover { border-color: rgba(224,22,10,0.3); transform: translateY(-3px); }
-    .contact-card:hover::before { transform: scaleX(1); }
-
-    .card-icon {
-      width: 56px; height: 56px;
-      background: var(--bg3);
-      border: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.6rem;
-      clip-path: polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);
-      flex-shrink: 0;
-    }
-    .card-icon.red { background: rgba(224,22,10,0.1); border-color: rgba(224,22,10,0.3); }
-
-    .card-label { font-family: 'Barlow Condensed', sans-serif; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.25em; text-transform: uppercase; color: var(--grey); }
-    .card-value { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 0.04em; line-height: 1; }
-    .card-sub { font-size: 0.82rem; color: var(--grey); line-height: 1.5; }
-
-    .card-cta {
-      display: inline-flex; align-items: center; gap: 0.5rem;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-weight: 700; font-size: 0.78rem;
-      letter-spacing: 0.15em; text-transform: uppercase;
-      color: var(--red);
-      margin-top: auto;
-      padding-top: 0.5rem;
-    }
-    .card-cta::after { content: '→'; transition: transform 0.2s; }
-    .contact-card:hover .card-cta::after { transform: translateX(4px); }
-
-    /* BIG CARD */
-    .contact-card.full {
-      grid-column: 1 / -1;
-      flex-direction: row;
-      align-items: center;
-      gap: 2rem;
-      padding: 2rem 2.5rem;
-    }
-    .card-body { flex: 1; }
-
-    /* DEVIS FORM */
-    .devis-panel {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      padding: 2.5rem;
-    }
-    .panel-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 0.06em; margin-bottom: 1.8rem; display: flex; align-items: center; gap: 0.6rem; }
-    .panel-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
-    .form-field { display: flex; flex-direction: column; gap: 0.4rem; }
-    .form-field.full { grid-column: 1 / -1; }
-    .form-label { font-family: 'Barlow Condensed', sans-serif; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--grey); }
-    .form-input {
-      background: var(--bg3); border: 1px solid var(--border);
-      color: var(--white); font-family: 'Barlow', sans-serif;
-      font-size: 0.95rem; padding: 0.8rem 1rem;
-      outline: none; transition: border-color 0.2s;
-      width: 100%;
-    }
-    .form-input:focus { border-color: var(--red); }
-    .form-input::placeholder { color: #333; }
-    textarea.form-input { resize: vertical; min-height: 110px; }
-    select.form-input { cursor: pointer; }
-    select.form-input option { background: var(--bg3); }
-
-    .btn-submit {
-      width: 100%; background: var(--red); color: #fff; border: none;
-      padding: 1rem 2rem; margin-top: 0.5rem;
-      font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
-      font-size: 1rem; letter-spacing: 0.15em; text-transform: uppercase;
-      cursor: pointer;
-      clip-path: polygon(12px 0%,100% 0%,calc(100% - 12px) 100%,0% 100%);
-      transition: background 0.2s;
-    }
-    .btn-submit:hover { background: var(--red-dark); }
-
-    .success-msg {
-      display: none;
-      background: rgba(224,22,10,0.08);
-      border: 1px solid var(--red);
-      color: var(--white);
-      padding: 1rem 1.5rem;
-      font-size: 0.95rem;
-      text-align: center;
-      margin-top: 1rem;
-    }
-
-    /* INFOS BAS */
-    .info-strip {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0;
-      border: 1px solid var(--border);
-      background: var(--bg2);
-    }
-    .info-item {
-      padding: 1.5rem;
-      border-right: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      gap: 0.4rem;
-    }
-    .info-item:last-child { border-right: none; }
-    .info-icon { font-size: 1.3rem; }
-    .info-title { font-family: 'Barlow Condensed', sans-serif; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--grey); }
-    .info-value { font-family: 'Barlow Condensed', sans-serif; font-size: 1rem; font-weight: 600; letter-spacing: 0.04em; }
-
-    /* REVEAL */
-    .reveal { opacity: 0; transform: translateY(22px); transition: opacity 0.7s cubic-bezier(.16,1,.3,1), transform 0.7s cubic-bezier(.16,1,.3,1); }
-    .reveal.visible { opacity: 1; transform: none; }
-
-    @media (max-width: 640px) {
-      .contact-grid { grid-template-columns: 1fr; }
-      .contact-card.full { flex-direction: column; align-items: flex-start; }
-      .form-grid { grid-template-columns: 1fr; }
-      .info-strip { grid-template-columns: 1fr; }
-      .info-item { border-right: none; border-bottom: 1px solid var(--border); }
-      .info-item:last-child { border-bottom: none; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Contact et devis · TKM Auto, Hersin-Coupigny</title>
+<meta name="description" content="Demandez un devis gratuit à TKM Auto par mail ou sur Instagram. Réponse sous 24 h. Atelier à Hersin-Coupigny (62530), sur rendez-vous.">
+<link rel="canonical" href="https://www.tkm-auto.fr/contact.html">
+<meta name="theme-color" content="#050A16">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tkm.css">
+<style>
+.contact{display:grid;grid-template-columns:1fr 1.35fr;gap:clamp(1.5rem,5vw,4rem);align-items:start;padding-bottom:clamp(4rem,8vw,6rem)}
+.channels{display:flex;flex-direction:column;border-top:1px solid var(--trait)}
+.channel{display:grid;grid-template-columns:auto 1fr;gap:1.1rem;align-items:center;padding:1.5rem 0;border-bottom:1px solid var(--trait);position:relative;isolation:isolate}
+.channel::before{content:'';position:absolute;inset:0 -1rem;z-index:-1;background:linear-gradient(90deg,rgba(47,107,255,.14),transparent);transform:scaleX(0);transform-origin:left;transition:transform .5s var(--ease)}
+a.channel:hover::before{transform:scaleX(1)}
+.channel-ico{width:48px;height:48px;display:grid;place-items:center;border:1px solid var(--trait2);color:var(--xenon)}
+.channel-ico svg{width:22px;height:22px}
+.channel small{display:block;font-stretch:85%;font-weight:600;font-size:.82rem;color:var(--gris)}
+.channel strong{display:block;font-stretch:112%;font-weight:750;font-size:clamp(1.05rem,2.2vw,1.35rem);color:#fff;word-break:break-word}
+.channel span.muted{font-size:.88rem}
+.facts{display:grid;grid-template-columns:repeat(3,1fr);margin-top:2rem;border:1px solid var(--trait)}
+.facts div{padding:1rem;font-size:.85rem;color:var(--gris)}
+.facts div+div{border-left:1px solid var(--trait)}
+.facts b{display:block;font-stretch:112%;font-weight:800;font-size:1.1rem;color:#fff}
+.form .panel-title{font-size:1.25rem}
+.form-hint{font-size:.88rem;color:var(--gris);margin:-.4rem 0 1.3rem}
+@media(max-width:900px){.contact{grid-template-columns:1fr}}
+@media(max-width:480px){.facts{grid-template-columns:1fr}.facts div+div{border-left:none;border-top:1px solid var(--trait)}}
+</style>
 </head>
 <body>
 
-<nav>
-  <a href="index.html" class="nav-logo">TK<span>M</span></a>
-  <a href="index.html" class="nav-back">← Retour au site</a>
-</nav>
+<div data-tkm-nav></div>
 
-<div class="hero reveal">
-  <div class="hero-label">TKM Auto · Hersin-Coupigny</div>
-  <h1 class="hero-title">Contact &<br><span style="color:var(--red)">Devis</span></h1>
-  <p class="hero-sub">Disponible par mail ou Instagram. Réponse rapide garantie — généralement sous 24h.</p>
-</div>
+<main>
+  <header class="page-head">
+    <div class="wrap">
+      <p class="crumb"><a href="index.html">Accueil</a> / Contact</p>
+      <h1 class="display">Contact et devis</h1>
+      <p class="lead">Écrivez-nous par mail ou sur Instagram, ou remplissez le formulaire. Le devis est gratuit et vous avez une réponse sous 24 h.</p>
+    </div>
+  </header>
 
-<div class="main">
-
-  <!-- CARTES CONTACT -->
-  <div class="contact-grid reveal">
-
-    <!-- EMAIL -->
-    <a class="contact-card" href="mailto:contact@tkm-auto.fr">
-      <div class="card-icon red">✉️</div>
-      <div>
-        <div class="card-label">Email</div>
-        <div class="card-value" style="font-size:1.2rem">contact@tkm-auto.fr</div>
+  <div class="wrap contact">
+    <div class="rv">
+      <div class="channels">
+        <a class="channel" href="mailto:contact@tkm-auto.fr">
+          <span class="channel-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="1"/><path d="m3.5 6 8.5 7 8.5-7"/></svg></span>
+          <span><small>Par mail</small><strong>contact@tkm-auto.fr</strong><span class="muted">Idéal pour envoyer des photos de votre voiture</span></span>
+        </a>
+        <a class="channel" href="https://instagram.com/tkm.auto" target="_blank" rel="noopener">
+          <span class="channel-ico" id="icoInsta"></span>
+          <span><small>Sur Instagram</small><strong>@tkm.auto</strong><span class="muted">Envoyez-nous un message privé</span></span>
+        </a>
+        <a class="channel" href="https://maps.google.com/?q=Hersin-Coupigny+62530" target="_blank" rel="noopener">
+          <span class="channel-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></svg></span>
+          <span><small>L'atelier, sur rendez-vous</small><strong>Hersin-Coupigny, 62530</strong><span class="muted">Secteur Béthune, Lens, Liévin et Bruay</span></span>
+        </a>
       </div>
-      <div class="card-sub">Pour vos devis, questions et projets. On répond sous 24h.</div>
-      <div class="card-cta">Envoyer un mail</div>
-    </a>
-
-    <!-- INSTAGRAM -->
-    <a class="contact-card" href="https://instagram.com/tkm.auto" target="_blank" rel="noopener">
-      <div class="card-icon" style="background:linear-gradient(135deg,rgba(131,58,180,0.2),rgba(253,29,29,0.2),rgba(252,176,69,0.2));border-color:rgba(224,22,10,0.3)">📸</div>
-      <div>
-        <div class="card-label">Instagram</div>
-        <div class="card-value">@tkm.auto</div>
+      <div class="facts">
+        <div><b>24 h</b>pour vous répondre</div>
+        <div><b>0 €</b>pour le devis</div>
+        <div><b>30 %</b>d'acompte pour réserver</div>
       </div>
-      <div class="card-sub">Suivez nos réalisations en live et envoyez-nous un DM pour un devis rapide.</div>
-      <div class="card-cta">Ouvrir Instagram</div>
-    </a>
+    </div>
 
-    <!-- LOCALISATION -->
-    <a class="contact-card full" href="https://maps.google.com/?q=Hersin-Coupigny+62530" target="_blank" rel="noopener">
-      <div class="card-icon">📍</div>
-      <div class="card-body">
-        <div class="card-label">Localisation · Sur rendez-vous uniquement</div>
-        <div class="card-value" style="font-size:1.3rem;margin-top:0.3rem">Hersin-Coupigny · 62530</div>
-        <div class="card-sub" style="margin-top:0.5rem">Pas-de-Calais · On intervient aussi dans le secteur de Béthune, Lens et Liévin</div>
+    <form class="panel form rv" data-d="100" id="devisForm" novalidate>
+      <h2 class="panel-title">Demander un devis</h2>
+      <p class="form-hint">Le bouton ouvre votre appli mail avec le message déjà rédigé. Il ne reste qu'à l'envoyer.</p>
+      <div class="row2">
+        <div class="field"><label class="label" for="fName">Prénom</label><input class="input" id="fName" autocomplete="given-name" required></div>
+        <div class="field"><label class="label" for="fCar">Votre voiture</label><input class="input" id="fCar" placeholder="Ex. Clio 4, Golf 7, Leon FR"></div>
       </div>
-      <div class="card-cta">Voir sur la carte</div>
-    </a>
-
+      <div class="field"><label class="label" for="fService">Prestation</label>
+        <select class="select" id="fService" required><option value="">Choisir une prestation</option></select></div>
+      <div class="field"><label class="label" for="fMsg">Votre projet</label>
+        <textarea class="textarea" id="fMsg" placeholder="Couleur souhaitée, parties à couvrir, délai, budget…"></textarea></div>
+      <div class="field"><label class="label" for="fPhone">Téléphone (facultatif)</label><input class="input" id="fPhone" type="tel" autocomplete="tel" placeholder="Pour qu'on vous rappelle"></div>
+      <p class="small" id="fErr" role="alert" style="color:var(--signal);min-height:1.2em;margin-bottom:.6rem"></p>
+      <button class="btn btn-block" type="submit">Envoyer ma demande</button>
+      <div class="ok-msg" id="fOk">Votre appli mail s'est ouverte avec votre demande. Envoyez le message et on vous répond sous 24 h.</div>
+    </form>
   </div>
+</main>
 
-  <!-- FORMULAIRE DEVIS -->
-  <div class="devis-panel reveal">
-    <div class="panel-title">📋 Formulaire de Devis</div>
-    <div class="form-grid">
-      <div class="form-field">
-        <label class="form-label">Votre prénom *</label>
-        <input type="text" class="form-input" id="fname" placeholder="Prénom" />
-      </div>
-      <div class="form-field">
-        <label class="form-label">Votre véhicule</label>
-        <input type="text" class="form-input" id="fcar" placeholder="Ex : Peugeot 308, BMW Série 3..." />
-      </div>
-      <div class="form-field full">
-        <label class="form-label">Prestation souhaitée *</label>
-        <select class="form-input" id="fservice">
-          <option value="">-- Choisir une prestation --</option>
-          <option>Covering automobile</option>
-          <option>Vitre teintée</option>
-          <option>Stickers personnalisés</option>
-          <option>Ciel étoilé</option>
-          <option>Bandeau pare-brise</option>
-          <option>Cache plaque personnalisé</option>
-          <option>Rénovation d'optiques</option>
-          <option>Plusieurs prestations / Pack</option>
-          <option>Autre</option>
-        </select>
-      </div>
-      <div class="form-field full">
-        <label class="form-label">Décrivez votre projet</label>
-        <textarea class="form-input" id="fmsg" placeholder="Couleurs souhaitées, dimensions, délai, budget approximatif..."></textarea>
-      </div>
-    </div>
-    <button class="btn-submit" onclick="sendDevis()">📩 Envoyer ma demande de devis</button>
-    <div class="success-msg" id="successMsg">✅ Votre demande a bien été envoyée ! On revient vers vous sous 24h.</div>
-  </div>
+<div data-tkm-footer></div>
 
-  <!-- INFOS -->
-  <div class="info-strip reveal">
-    <div class="info-item">
-      <div class="info-icon">⏱</div>
-      <div class="info-title">Réponse</div>
-      <div class="info-value">Sous 24h</div>
-    </div>
-    <div class="info-item">
-      <div class="info-icon">💰</div>
-      <div class="info-title">Devis</div>
-      <div class="info-value">Gratuit</div>
-    </div>
-    <div class="info-item">
-      <div class="info-icon">📍</div>
-      <div class="info-title">Zone</div>
-      <div class="info-value">62 · Nord</div>
-    </div>
-  </div>
-
-</div>
-
+<script src="tkm.js"></script>
 <script>
-function sendDevis() {
-  const name    = document.getElementById('fname').value.trim();
-  const car     = document.getElementById('fcar').value.trim();
-  const service = document.getElementById('fservice').value;
-  const msg     = document.getElementById('fmsg').value.trim();
+(function contact(){
+  document.getElementById('icoInsta').innerHTML = TKM.iconSVG('instagram');
 
-  if (!name)    { alert('Veuillez entrer votre prénom.'); return; }
-  if (!service) { alert('Veuillez choisir une prestation.'); return; }
+  // Liste des prestations et formules
+  const sel = document.getElementById('fService');
+  sel.insertAdjacentHTML('beforeend', TARIFS.map(t =>
+    `<optgroup label="${t.name}">${t.items.map(it => `<option value="${t.name} : ${it.n} (${it.d})">${it.n}, ${it.d}</option>`).join('')}</optgroup>`
+  ).join('') + '<option value="Autre projet">Autre projet</option>');
 
-  const subject = encodeURIComponent(`Demande de devis – ${service} – ${name}`);
-  const body = encodeURIComponent([
-    `Bonjour TKM,`,
-    ``,
-    `Je souhaite obtenir un devis pour la prestation suivante :`,
-    ``,
-    `- Prénom : ${name}`,
-    car     ? `- Véhicule : ${car}` : '',
-    `- Prestation : ${service}`,
-    msg     ? `- Détails : ${msg}` : '',
-    ``,
-    `Merci !`
-  ].filter(Boolean).join('\n'));
+  // Pré-remplissage depuis la grille tarifaire : contact.html?service=covering&item=Capot
+  const q = new URLSearchParams(location.search);
+  const cat = TARIFS.find(t => t.id === q.get('service'));
+  if (cat){
+    const it = cat.items.find(i => i.n === q.get('item')) || cat.items[0];
+    sel.value = `${cat.name} : ${it.n} (${it.d})`;
+  }
+  if (q.get('msg')) document.getElementById('fMsg').value = q.get('msg');
 
-  const a = document.createElement('a');
-  a.href = `mailto:contact@tkm-auto.fr?subject=${subject}&body=${body}`;
-  a.target = '_blank';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-
-  document.getElementById('successMsg').style.display = 'block';
-  setTimeout(() => document.getElementById('successMsg').style.display = 'none', 5000);
-}
-
-// Reveal
-const obs = new IntersectionObserver(entries => {
-  entries.forEach((e, i) => {
-    if (e.isIntersecting) {
-      setTimeout(() => e.target.classList.add('visible'), i * 80);
-      obs.unobserve(e.target);
-    }
+  document.getElementById('devisForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const v = id => document.getElementById(id).value.trim();
+    const err = document.getElementById('fErr');
+    err.textContent = '';
+    if (!v('fName')) return void (err.textContent = 'Indiquez votre prénom.');
+    if (!v('fService')) return void (err.textContent = 'Choisissez la prestation qui vous intéresse.');
+    TKM.mail(`Demande de devis : ${v('fService').split(' (')[0]}`, [
+      'Bonjour TKM,', '',
+      'Je souhaite un devis pour :', '',
+      `Prestation : ${v('fService')}`,
+      v('fCar') && `Voiture : ${v('fCar')}`,
+      v('fMsg') && `Projet : ${v('fMsg')}`,
+      v('fPhone') && `Téléphone : ${v('fPhone')}`,
+      '', 'Merci,', v('fName')
+    ]);
+    document.getElementById('fOk').classList.add('show');
   });
-}, { threshold: 0.08 });
-document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+})();
 </script>
 </body>
 </html>
