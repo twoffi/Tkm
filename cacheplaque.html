@@ -6,7 +6,7 @@
 <title>Configurateur de cache plaque · TKM Auto</title>
 <meta name="description" content="Créez votre cache plaque personnalisé au format français 52 × 11 cm : fond, image, logos de réseaux sociaux et texte. Dès 20 €.">
 <link rel="canonical" href="https://www.tkm-auto.fr/cacheplaque.html">
-<meta name="theme-color" content="#050A16">
+<meta name="theme-color" content="#070707">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&family=Bebas+Neue&family=Montserrat:wght@900&family=Oswald:wght@700&family=Russo+One&family=Teko:wght@700&display=swap" rel="stylesheet">
@@ -29,14 +29,14 @@
 .ed{display:grid;grid-template-columns:330px 1fr;gap:1.2rem;align-items:start;padding-bottom:clamp(4rem,8vw,6rem)}
 .ed-main{display:flex;flex-direction:column;gap:1rem;min-width:0}
 .plate-wrap{background:var(--carbone);border:1px solid var(--trait);padding:clamp(1rem,3vw,2rem)}
-.bench{background:repeating-linear-gradient(45deg,#070d1c 0 10px,#081021 10px 20px);padding:clamp(.8rem,3vw,2rem);display:flex;justify-content:center}
+.bench{background:repeating-linear-gradient(45deg,#090909 0 10px,#0d0d0d 10px 20px);padding:clamp(.8rem,3vw,2rem);display:flex;justify-content:center}
 #plate{width:100%;height:auto;aspect-ratio:700/148;display:block;touch-action:none;cursor:grab;box-shadow:0 18px 50px rgba(0,0,0,.5)}
 #plate.dragging{cursor:grabbing}
 .plate-meta{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-top:.8rem;font-size:.85rem;color:var(--gris)}
 .tools{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:1rem}
 .tool{padding:.55rem .9rem;font-size:.85rem;font-weight:500;border:1px solid var(--trait2);color:var(--chrome);transition:all .2s}
 .tool:hover{border-color:var(--xenon)}
-.tool.on{border-color:var(--elec);background:rgba(47,107,255,.16);color:#fff}
+.tool.on{border-color:var(--elec);background:rgba(224,22,10,.16);color:#fff}
 .tool[disabled]{opacity:.35;pointer-events:none}
 .tool.danger:hover{border-color:var(--signal);color:var(--signal)}
 
@@ -126,7 +126,7 @@
           <div class="range-row"><input class="range" type="range" id="bgOp" min="0" max="100" value="100" aria-label="Opacité du fond"><span class="range-val" id="bgOpV">100 %</span></div>
         </div>
         <div class="row2">
-          <div class="field"><label class="label" for="brdC">Bordure</label><input type="color" id="brdC" value="#2F6BFF" class="input" style="height:44px;padding:4px"></div>
+          <div class="field"><label class="label" for="brdC">Bordure</label><input type="color" id="brdC" value="#E0160A" class="input" style="height:44px;padding:4px"></div>
           <div class="field"><label class="label" for="brdW">Épaisseur</label><input type="number" class="input" id="brdW" min="0" max="20" value="4"></div>
         </div>
         <div class="field">
@@ -225,9 +225,9 @@
   const cv = $('plate'), ctx = cv.getContext('2d');
   cv.width = PW * RES; cv.height = PH * RES;
 
-  const BG_COLORS = ['#0A1224','#000000','#ffffff','#2F6BFF','#E0160A','#FFD23F','#6B7280','#14532D'];
+  const BG_COLORS = ['#0F0F0F','#000000','#ffffff','#2F6BFF','#E0160A','#FFD23F','#6B7280','#14532D'];
   const NETS = [['instagram','Insta'],['tiktok','TikTok'],['snapchat','Snap'],['youtube','YouTube']];
-  const S = { bgType:'solid', bgColor:'#0A1224', img:null, offX:0, offY:0, zoom:1, op:1, brdC:'#2F6BFF', brdW:4, rad:8 };
+  const S = { bgType:'solid', bgColor:'#0F0F0F', img:null, offX:0, offY:0, zoom:1, op:1, brdC:'#E0160A', brdW:4, rad:8 };
   let els = [], sel = null, tool = 'el', drag = null, uid = 0, touched = false;
 
   /* ─────────── Écrans d'avertissement ─────────── */
@@ -273,9 +273,9 @@
     if (S.brdW > 0){ rr(c, S.brdW/2, S.brdW/2, PW - S.brdW, PH - S.brdW, Math.max(0, S.rad - S.brdW/2)); c.strokeStyle = S.brdC; c.lineWidth = S.brdW; c.stroke(); }
     if (showSel && sel){
       const b = bounds(sel);
-      c.save(); c.strokeStyle = '#8DBBFF'; c.lineWidth = 1.5; c.setLineDash([5,4]);
+      c.save(); c.strokeStyle = '#FF5A4D'; c.lineWidth = 1.5; c.setLineDash([5,4]);
       c.strokeRect(b.x - 5, b.y - 5, b.w + 10, b.h + 10); c.setLineDash([]);
-      c.fillStyle = '#2F6BFF'; c.strokeStyle = '#fff';
+      c.fillStyle = '#E0160A'; c.strokeStyle = '#fff';
       c.beginPath(); c.arc(b.x + b.w + 5, b.y + b.h + 5, 8, 0, Math.PI*2); c.fill(); c.stroke();
       c.restore();
     }
@@ -359,7 +359,7 @@
   const syncSelSize = () => { $('selSize').value = sel.size; $('selSizeV').textContent = sel.size; };
   function refreshSel(){
     $('selPanel').classList.toggle('show', !!sel);
-    $('hint').textContent = sel ? 'Glissez pour déplacer, tirez le rond bleu pour agrandir' : 'Touchez un élément pour le sélectionner';
+    $('hint').textContent = sel ? 'Glissez pour déplacer, tirez le rond rouge pour agrandir' : 'Touchez un élément pour le sélectionner';
     if (!sel) return;
     $('selTitle').textContent = sel.type === 'icon' ? `Logo ${NETS.find(n => n[0] === sel.net)[1]}` : `Texte « ${sel.text} »`;
     syncSelSize();
@@ -394,7 +394,7 @@
   $('bgImg').onclick = () => setBgType('image');
 
   $('bgColors').innerHTML = BG_COLORS.map(c => `<button class="swatch" type="button" style="background:${c}" data-c="${c}" aria-label="Fond ${c}"></button>`).join('')
-    + '<label class="swatch custom" title="Autre couleur"><input type="color" id="bgCustom" value="#1A2742" aria-label="Autre couleur de fond"></label>';
+    + '<label class="swatch custom" title="Autre couleur"><input type="color" id="bgCustom" value="#262626" aria-label="Autre couleur de fond"></label>';
   const syncBg = () => $('bgColors').querySelectorAll('[data-c]').forEach(s => s.classList.toggle('on', s.dataset.c === S.bgColor));
   $('bgColors').addEventListener('click', e => { const s = e.target.closest('[data-c]'); if (!s) return; S.bgColor = s.dataset.c; syncBg(); render(); });
   $('bgCustom').oninput = e => { S.bgColor = e.target.value; syncBg(); render(); };

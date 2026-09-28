@@ -261,66 +261,185 @@ const TKM = {
 })();
 
 /* ────────────────────────────────────────────
-   5. COMPORTEMENTS COMMUNS
+   5. DÉFILEMENT FLUIDE & ANIMATIONS
    ──────────────────────────────────────────── */
 (function behaviours(){
+  const root = document.documentElement;
   const nav = document.getElementById('tkmNav');
   const burger = document.getElementById('tkmBurger');
-  const root = document.documentElement;
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  let lenis = null;
 
-  // Menu mobile
+  /* Menu mobile */
+  const setMenu = open => {
+    root.classList.toggle('menu-open', open);
+    if (burger){ burger.setAttribute('aria-expanded', open); burger.setAttribute('aria-label', open ? 'Fermer le menu' : 'Ouvrir le menu'); }
+    document.body.style.overflow = open ? 'hidden' : '';
+    if (lenis) open ? lenis.stop() : lenis.start();
+  };
   if (burger){
-    const setMenu = open => {
-      root.classList.toggle('menu-open', open);
-      burger.setAttribute('aria-expanded', open);
-      burger.setAttribute('aria-label', open ? 'Fermer le menu' : 'Ouvrir le menu');
-      document.body.style.overflow = open ? 'hidden' : '';
-    };
     burger.addEventListener('click', () => setMenu(!root.classList.contains('menu-open')));
     document.querySelectorAll('#tkmMenu a').forEach(a => a.addEventListener('click', () => setMenu(false)));
     addEventListener('keydown', e => { if (e.key === 'Escape') setMenu(false); });
   }
 
-  // Barre de progression + nav opaque au défilement
+  /* Barre de progression */
   const bar = document.createElement('div');
   bar.id = 'tkm-progress';
   document.body.prepend(bar);
-  const onScroll = () => {
-    const max = document.documentElement.scrollHeight - innerHeight;
-    bar.style.width = (max > 0 ? scrollY / max * 100 : 0) + '%';
-    if (nav) nav.classList.toggle('solid', scrollY > 40 || document.body.dataset.solidNav === 'true');
-  };
-  addEventListener('scroll', onScroll, { passive:true });
-  onScroll();
 
-  // Halo lumineux qui suit la souris (ordinateur uniquement)
+  /* Halo lumineux qui suit la souris (ordinateur uniquement) */
   if (matchMedia('(pointer:fine)').matches && !TKM.reduced){
     const glow = document.createElement('div');
     glow.id = 'tkm-cursor';
     document.body.appendChild(glow);
     let mx = innerWidth/2, my = innerHeight/2, gx = mx, gy = my;
     addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; }, { passive:true });
-    (function loop(){
-      gx += (mx - gx) * .12; gy += (my - gy) * .12;
-      glow.style.transform = `translate(${gx}px,${gy}px)`;
-      requestAnimationFrame(loop);
-    })();
+    (function loop(){ gx += (mx - gx) * .12; gy += (my - gy) * .12; glow.style.transform = `translate(${gx}px,${gy}px)`; requestAnimationFrame(loop); })();
   }
 
-  // Apparition au défilement
-  const els = document.querySelectorAll('.rv');
-  if ('IntersectionObserver' in window && !TKM.reduced){
-    const io = new IntersectionObserver(entries => {
-      entries.forEach(e => {
-        if (!e.isIntersecting) return;
-        const d = +e.target.dataset.d || 0;
-        e.target.style.transitionDelay = d + 'ms';
-        e.target.classList.add('in');
-        io.unobserve(e.target);
-      });
-    }, { threshold:.12, rootMargin:'0px 0px -40px 0px' });
-    els.forEach(el => io.observe(el));
-  } else {
-    els.forEach(el => el.classList.add('in'));
+  /* Zones qui gardent leur propre défilement */
+  document.querySelectorAll('.els, .cats-inner, textarea, .menu').forEach(el => el.setAttribute('data-lenis-prevent', ''));
+
+  /* ── Boucle unique : défilement fluide + effets liés au scroll ── */
+  const tickers = [];
+  TKM.onScroll = fn => { tickers.push(fn); fn(scrollY); };
+  let lastY = -1, dirty = true;
+  addEventListener('resize', () => { dirty = true; }, { passive:true });
+  addEventListener('load', () => { dirty = true; });
+  function frame(t){
+    if (lenis) lenis.raf(t);
+    const y = scrollY;
+    if (y !== lastY || dirty){
+      lastY = y; dirty = false;
+      const max = root.scrollHeight - innerHeight;
+      bar.style.width = (max > 0 ? y / max * 100 : 0) + '%';
+      if (nav) nav.classList.toggle('solid', y > 40);
+      for (const f of tickers) f(y);
+    }
+    requestAnimationFrame(frame);
   }
+  requestAnimationFrame(frame);
+  TKM.refresh = () => { dirty = true; if (lenis) lenis.resize(); };
+
+  /* Défilement fluide avec Lenis (chargé à côté, désactivé si l'utilisateur limite les animations) */
+  if (!TKM.reduced){
+    const sc = document.createElement('script');
+    sc.src = 'lenis.min.js';
+    sc.onload = () => {
+      if (typeof Lenis === 'undefined') return;
+      lenis = new Lenis({ lerp:.085, smoothWheel:true, anchors:false, autoRaf:false });
+      TKM.lenis = lenis;
+      if (location.hash){
+        const t = document.querySelector(location.hash);
+        if (t) setTimeout(() => lenis.scrollTo(t, { offset:-80, immediate:true }), 60);
+      }
+    };
+    document.head.appendChild(sc);
+  }
+
+  /* Liens vers une section de la même page */
+  const norm = p => p.replace(/index\.html$/, '');
+  document.addEventListener('click', e => {
+    const a = e.target.closest('a[href*="#"]');
+    if (!a || a.target === '_blank') return;
+    const url = new URL(a.href, location.href);
+    if (norm(url.pathname) !== norm(location.pathname) || !url.hash) return;
+    const target = document.querySelector(url.hash);
+    if (!target) return;
+    e.preventDefault();
+    if (lenis) lenis.scrollTo(target, { offset:-80, duration:1.5 });
+    else target.scrollIntoView({ behavior: TKM.reduced ? 'auto' : 'smooth' });
+    history.replaceState(null, '', url.hash);
+  });
+
+  /* ── Apparitions ── */
+  const io = ('IntersectionObserver' in window && !TKM.reduced) ? new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      const d = +e.target.dataset.d || 0;
+      if (d) e.target.style.transitionDelay = d + 'ms';
+      e.target.classList.add('in');
+      io.unobserve(e.target);
+    });
+  }, { threshold:.15, rootMargin:'0px 0px -60px 0px' }) : null;
+  const observe = els => els.forEach(el => io ? io.observe(el) : el.classList.add('in'));
+
+  /* Titres découpés en mots qui montent */
+  const splitWords = el => {
+    if (el.dataset.split === 'done' || el.children.length || !el.textContent.trim()) return;
+    let n = 0;
+    el.innerHTML = el.textContent.split(/(\s+)/).map(p =>
+      (!p || /^\s+$/.test(p)) ? p : `<span class="w"><span style="transition-delay:${(n++) * 55}ms">${TKM.esc(p)}</span></span>`
+    ).join('');
+    el.dataset.split = 'done';
+    el.classList.add('split');
+    el.classList.remove('rv');
+  };
+
+  /* Texte qui s'allume mot après mot pendant la lecture */
+  const lit = el => {
+    if (el.dataset.litDone) return;
+    el.dataset.litDone = '1';
+    el.innerHTML = el.textContent.trim().split(/\s+/).map(w => `<span class="lw">${TKM.esc(w)}</span>`).join(' ');
+    const words = [...el.querySelectorAll('.lw')];
+    let shown = -1;
+    if (TKM.reduced){ words.forEach(w => w.classList.add('on')); return; }
+    TKM.onScroll(() => {
+      const r = el.getBoundingClientRect();
+      const p = clamp((innerHeight * .88 - r.top) / (r.height + innerHeight * .3), 0, 1);
+      const k = Math.round(p * words.length);
+      if (k === shown) return;
+      shown = k;
+      words.forEach((w, i) => w.classList.toggle('on', i < k));
+    });
+  };
+
+  /* Effet de profondeur : l'élément glisse plus lentement que la page */
+  const parallax = el => {
+    if (el.dataset.pxDone || TKM.reduced) return;
+    el.dataset.pxDone = '1';
+    const sp = parseFloat(el.dataset.speed) || .15, ref = el.parentElement;
+    TKM.onScroll(() => {
+      const r = ref.getBoundingClientRect();
+      if (r.bottom < -200 || r.top > innerHeight + 200) return;
+      el.style.transform = `translate3d(0,${-(r.top + r.height/2 - innerHeight/2) * sp}px,0)`;
+    });
+  };
+
+  /* Bandeau de texte qui avance avec le défilement */
+  const marquee = el => {
+    if (el.dataset.mqDone) return;
+    el.dataset.mqDone = '1';
+    const track = el.firstElementChild, dir = +el.dataset.dir || -1, sp = parseFloat(el.dataset.speed) || .4;
+    TKM.onScroll(y => {
+      const w = track.scrollWidth / 2 || 1;
+      const x = (((y * sp * dir) % w) + w) % w;
+      track.style.transform = `translate3d(${-x}px,0,0)`;
+    });
+  };
+
+  /* Trait qui se dessine selon la position dans la page (--p de 0 à 1) */
+  const draw = el => {
+    if (el.dataset.drawDone) return;
+    el.dataset.drawDone = '1';
+    TKM.onScroll(() => {
+      const r = el.getBoundingClientRect();
+      el.style.setProperty('--p', TKM.reduced ? 1 : clamp((innerHeight * .8 - r.top) / (r.height + innerHeight * .2), 0, 1).toFixed(3));
+    });
+  };
+
+  TKM.animate = (scope = document) => {
+    scope.querySelectorAll('.h2, .page-head .display, [data-split]').forEach(splitWords);
+    scope.querySelectorAll('[data-lit]').forEach(lit);
+    scope.querySelectorAll('[data-speed]').forEach(parallax);
+    scope.querySelectorAll('[data-marquee]').forEach(marquee);
+    scope.querySelectorAll('[data-draw]').forEach(draw);
+    observe(scope.querySelectorAll('.rv:not(.in), .split:not(.in), .wipe:not(.in), .slide-l:not(.in), .slide-r:not(.in)'));
+    TKM.refresh();
+  };
+
+  // Le texte d'introduction de chaque sous-page apparaît aussi en douceur
+  document.querySelectorAll('.page-head .lead, .page-head .crumb').forEach(el => el.classList.add('rv'));
+  TKM.animate();
 })();

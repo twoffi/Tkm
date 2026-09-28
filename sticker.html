@@ -6,7 +6,7 @@
 <title>Configurateur de sticker réseau social · TKM Auto</title>
 <meta name="description" content="Créez votre sticker Instagram, TikTok, Snapchat ou YouTube pour votre voiture. Aperçu en direct, choix de la police et de la couleur, dès 5 €.">
 <link rel="canonical" href="https://www.tkm-auto.fr/sticker.html">
-<meta name="theme-color" content="#050A16">
+<meta name="theme-color" content="#070707">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&family=Bebas+Neue&family=Montserrat:wght@900&family=Oswald:wght@700&family=Raleway:wght@900&family=Russo+One&family=Teko:wght@700&display=swap" rel="stylesheet">
@@ -21,18 +21,18 @@
 .gaps .chip{padding:.6rem}
 
 .stage{position:relative;display:flex;align-items:center;justify-content:center;min-height:220px;padding:2.5rem 1.2rem;transition:background .3s}
-.stage[data-bg="dark"]{background:#03060F}
+.stage[data-bg="dark"]{background:#040404}
 .stage[data-bg="light"]{background:#EEF1F6}
 .stage[data-bg="glass"]{background:
   linear-gradient(45deg,#cfd5df 25%,transparent 25%),linear-gradient(-45deg,#cfd5df 25%,transparent 25%),
   linear-gradient(45deg,transparent 75%,#cfd5df 75%),linear-gradient(-45deg,transparent 75%,#cfd5df 75%) #fff;
   background-size:18px 18px;background-position:0 0,0 9px,9px -9px,-9px 0}
-.stage[data-bg="paint"]{background:linear-gradient(160deg,#1b2d5c,#0b1430 55%,#2a3f78)}
+.stage[data-bg="paint"]{background:linear-gradient(160deg,#6a0b07,#1c0303 55%,#8a100a)}
 .stage[data-bg="paint"]::after{content:'';position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.12) 45%,transparent 60%);pointer-events:none}
 #live{max-width:100%;height:auto;display:block}
 .bgs{display:flex;gap:.3rem;flex-wrap:wrap;margin-bottom:.8rem}
 .bgs button{padding:.4rem .8rem;font-size:.82rem;border:1px solid var(--trait2);color:var(--gris);transition:all .2s}
-.bgs button.on{border-color:var(--elec);color:#fff;background:rgba(47,107,255,.14)}
+.bgs button.on{border-color:var(--elec);color:#fff;background:rgba(224,22,10,.14)}
 .size-out{font-stretch:112%;font-weight:800;color:var(--xenon)}
 .price-line{display:flex;justify-content:space-between;align-items:baseline;margin:.2rem 0 1rem}
 .price-line b{font-stretch:120%;font-weight:850;font-size:2rem;color:#fff}
@@ -151,7 +151,7 @@
 
   /* ── Couleurs ── */
   $('colors').innerHTML = COLORS.map(([c,n]) => `<button class="swatch" type="button" style="background:${c}" data-c="${c}" aria-label="${n}" title="${n}"></button>`).join('')
-    + `<label class="swatch custom" title="Autre couleur"><input type="color" id="customColor" value="#8DBBFF" aria-label="Autre couleur"></label>`;
+    + `<label class="swatch custom" title="Autre couleur"><input type="color" id="customColor" value="#FF5A4D" aria-label="Autre couleur"></label>`;
   const syncColors = () => $('colors').querySelectorAll('.swatch[data-c]').forEach(s => s.classList.toggle('on', s.dataset.c === S.color));
   $('colors').addEventListener('click', e => { const s = e.target.closest('.swatch[data-c]'); if (!s) return; S.color = s.dataset.c; syncColors(); update(); });
   $('customColor').addEventListener('input', e => { S.color = e.target.value; syncColors(); update(); });

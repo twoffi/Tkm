@@ -6,7 +6,7 @@
 <title>Tarifs · TKM Auto, Hersin-Coupigny</title>
 <meta name="description" content="Tous les prix TKM Auto : covering dès 40 €, vitres teintées dès 60 €, stickers dès 5 €, ciel étoilé dès 350 €, cache plaque dès 20 €. Paiement sécurisé en ligne.">
 <link rel="canonical" href="https://www.tkm-auto.fr/tarifs.html">
-<meta name="theme-color" content="#050A16">
+<meta name="theme-color" content="#070707">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&display=swap" rel="stylesheet">
@@ -20,7 +20,7 @@
 .cats-inner::-webkit-scrollbar{display:none}
 .cats a{flex-shrink:0;padding:.5rem .9rem;font-size:.88rem;font-weight:500;color:var(--gris);border:1px solid transparent;transition:color .2s,border-color .2s,background .2s}
 .cats a:hover{color:#fff}
-.cats a.on{color:#fff;border-color:var(--elec);background:rgba(47,107,255,.14)}
+.cats a.on{color:#fff;border-color:var(--elec);background:rgba(224,22,10,.14)}
 
 .cat{display:grid;grid-template-columns:minmax(240px,.85fr) 2fr;gap:clamp(1.5rem,5vw,4rem);padding-block:clamp(3rem,6vw,4.5rem);border-bottom:1px solid var(--trait);scroll-margin-top:130px}
 .cat:last-child{border-bottom:none}
@@ -32,7 +32,7 @@
 .rows{border-top:1px solid var(--trait)}
 .item{display:grid;grid-template-columns:1fr auto auto;gap:1.2rem;align-items:center;padding:1.15rem 0;border-bottom:1px solid var(--trait)}
 .item-name{font-weight:600;color:#fff}
-.item-name .badge{display:inline-block;margin-left:.6rem;padding:.12rem .5rem;font-stretch:85%;font-weight:700;font-size:.72rem;color:var(--nuit);background:var(--signal);vertical-align:.12em}
+.item-name .badge{display:inline-block;margin-left:.6rem;padding:.12rem .5rem;font-stretch:85%;font-weight:700;font-size:.72rem;color:#fff;background:var(--elec);vertical-align:.12em}
 .item-detail{display:block;font-size:.88rem;color:var(--gris);margin-top:.1rem}
 .item-price{font-stretch:115%;font-weight:800;font-size:1.3rem;color:#fff;white-space:nowrap;text-align:right;min-width:5.5rem}
 .item-price.soft{font-stretch:95%;font-weight:600;font-size:1rem;color:var(--xenon)}
@@ -122,17 +122,7 @@
       </div>
     </section>`).join('');
 
-  // Apparition des blocs générés
-  const els = document.querySelectorAll('#catList .rv');
-  if (TKM.reduced || !('IntersectionObserver' in window)) els.forEach(el => el.classList.add('in'));
-  else {
-    const io = new IntersectionObserver(es => es.forEach(e => {
-      if (!e.isIntersecting) return;
-      e.target.style.transitionDelay = (e.target.dataset.d || 0) + 'ms';
-      e.target.classList.add('in'); io.unobserve(e.target);
-    }), { threshold:.08 });
-    els.forEach(el => io.observe(el));
-  }
+  TKM.animate(document.getElementById('catList'));
 
   // Catégorie active dans la barre
   const links = [...document.querySelectorAll('#cats a')];

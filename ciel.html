@@ -6,7 +6,7 @@
 <title>Simulateur de ciel étoilé · TKM Auto</title>
 <meta name="description" content="Simulez le ciel étoilé de votre voiture : 250 à 1000 fibres optiques, scintillement, étoiles filantes et couleur de lumière. Dès 350 €.">
 <link rel="canonical" href="https://www.tkm-auto.fr/ciel.html">
-<meta name="theme-color" content="#050A16">
+<meta name="theme-color" content="#070707">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&display=swap" rel="stylesheet">
@@ -14,7 +14,7 @@
 <style>
 .sim{display:grid;grid-template-columns:1fr 340px;gap:1.2rem;align-items:start;padding-bottom:clamp(4rem,8vw,6rem)}
 .view{position:sticky;top:88px}
-.roof{position:relative;background:#010308;border:1px solid var(--trait);overflow:hidden}
+.roof{position:relative;background:#020202;border:1px solid var(--trait);overflow:hidden}
 .roof canvas{display:block;width:100%;height:auto;aspect-ratio:16/10}
 .roof-bar{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;padding:.9rem 1.1rem;border:1px solid var(--trait);border-top:none;background:var(--carbone);font-size:.88rem;color:var(--gris)}
 .roof-bar b{color:#fff;font-stretch:112%;font-weight:800}
@@ -105,7 +105,7 @@
   const $ = id => document.getElementById(id);
   const cat = TARIFS.find(t => t.id === 'ciel');
   const TIERS = cat.items.slice(0, 4).map(it => ({ ...it, fibers: parseInt(it.d) }));
-  const COLORS = [['#ffffff','Blanc pur'],['#FFE7C2','Blanc chaud'],['#BFD6FF','Bleu glacier'],['#2F6BFF','Bleu TKM'],['#C9B8FF','Violet'],['#B8FFD9','Vert d\'eau'],['#FFD23F','Or'],['#FF6B9A','Rose']];
+  const COLORS = [['#ffffff','Blanc pur'],['#FFE7C2','Blanc chaud'],['#BFD6FF','Bleu glacier'],['#E0160A','Rouge TKM'],['#2F6BFF','Bleu'],['#C9B8FF','Violet'],['#FFD23F','Or'],['#FF6B9A','Rose']];
   const S = { tier: TIERS[1], shoot:false, twinkle:false, color:'#ffffff', bright:.85 };
 
   /* ── Réglages ── */
@@ -173,10 +173,10 @@
 
   function frame(){
     const [r,g,b] = rgb(S.color);
-    cx.fillStyle = '#010308'; cx.fillRect(0, 0, W, H);
+    cx.fillStyle = '#020202'; cx.fillRect(0, 0, W, H);
     cx.save(); cx.clip(roofPath);
     const fab = cx.createLinearGradient(0, 0, 0, H);
-    fab.addColorStop(0, '#05070D'); fab.addColorStop(1, '#0A0D16');
+    fab.addColorStop(0, '#060606'); fab.addColorStop(1, '#0d0d0d');
     cx.fillStyle = fab; cx.fillRect(0, 0, W, H);
     const vig = cx.createRadialGradient(W/2, H*.55, H*.1, W/2, H*.55, W*.7);
     vig.addColorStop(0, 'rgba(0,0,0,0)'); vig.addColorStop(1, 'rgba(0,0,0,.55)');
@@ -214,12 +214,12 @@
 
     // Plafonnier et pare-soleils
     const u = Math.min(W, H);
-    cx.fillStyle = '#0c1220'; cx.strokeStyle = 'rgba(141,187,255,.12)'; cx.lineWidth = 1;
+    cx.fillStyle = '#111111'; cx.strokeStyle = 'rgba(255,255,255,.1)'; cx.lineWidth = 1;
     const lw = W * .16, lh = u * .07;
     cx.beginPath(); cx.roundRect ? cx.roundRect(W/2 - lw/2, H * .94 - lh - u * .02, lw, lh, 6) : cx.rect(W/2 - lw/2, H * .94 - lh - u * .02, lw, lh); cx.fill(); cx.stroke();
     const vw = W * .27, vh = u * .09;
     [[W * .06, 'l'], [W * .94 - vw, 'r']].forEach(([x]) => { cx.beginPath(); cx.roundRect ? cx.roundRect(x, H * .94 - vh, vw, vh, 8) : cx.rect(x, H * .94 - vh, vw, vh); cx.fill(); cx.stroke(); });
-    cx.strokeStyle = 'rgba(141,187,255,.08)'; cx.lineWidth = 2; cx.stroke(roofPath);
+    cx.strokeStyle = 'rgba(255,255,255,.07)'; cx.lineWidth = 2; cx.stroke(roofPath);
 
     $('cShoot').textContent = S.shoot ? shooters.length : 0;
   }
